@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class OrderService {
+public class OrderService implements OrderUseCase {
 
     private final OrderRepository orderRepository;
 

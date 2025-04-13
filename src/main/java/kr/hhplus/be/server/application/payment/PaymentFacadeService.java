@@ -1,8 +1,8 @@
 package kr.hhplus.be.server.application.payment;
 
-import kr.hhplus.be.server.application.balance.BalanceService;
+import kr.hhplus.be.server.application.balance.BalanceUseCase;
 import kr.hhplus.be.server.application.balance.DecreaseBalanceCommand;
-import kr.hhplus.be.server.application.order.OrderService;
+import kr.hhplus.be.server.application.order.OrderUseCase;
 import kr.hhplus.be.server.common.vo.Money;
 import kr.hhplus.be.server.domain.order.Order;
 import kr.hhplus.be.server.domain.payment.Payment;
@@ -13,26 +13,26 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class PaymentFacadeService {
-    private final PaymentService paymentService;
-    private final OrderService orderService;
-    private final BalanceService balanceService;
+    private final PaymentUseCase paymentUseCase;
+    private final OrderUseCase orderUseCase;
+    private final BalanceUseCase balanceUseCase;
 
     // PaymentFacadeService.java
     @Transactional
     public PaymentResult requestPayment(RequestPaymentCommand command) {
         Money amount = Money.wons(command.amount());
 
-        Order order = orderService.getOrderForPayment(command.orderId());
+        Order order = orderUseCase.getOrderForPayment(command.orderId());
 
-        balanceService.decreaseBalance(
+        balanceUseCase.decreaseBalance(
                 new DecreaseBalanceCommand(command.userId(), amount.value())
         );
 
-        Payment payment = paymentService.recordSuccess(
+        Payment payment = paymentUseCase.recordSuccess(
                 PaymentCommand.from(command)
         );
 
-        orderService.markConfirmed(order);
+        orderUseCase.markConfirmed(order);
 
         return PaymentResult.from(payment);
     }

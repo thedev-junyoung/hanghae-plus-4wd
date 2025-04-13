@@ -1,9 +1,15 @@
 package kr.hhplus.be.server.application.order;
 
-public interface OrderUseCase {
+import kr.hhplus.be.server.common.vo.Money;
+import kr.hhplus.be.server.domain.order.Order;
+import kr.hhplus.be.server.domain.order.OrderItem;
 
-    /**
-     * 주문 생성 요청을 처리
-     */
-    OrderResult createOrder(CreateOrderCommand command);
+import java.util.List;
+
+public interface OrderUseCase {
+    Order createOrder(Long userId, List<OrderItem> items, Money totalAmount);
+
+    Order getOrderForPayment(String orderId);
+
+    void markConfirmed(Order order);
 }

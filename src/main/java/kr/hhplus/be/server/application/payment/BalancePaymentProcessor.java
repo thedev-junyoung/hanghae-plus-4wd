@@ -1,6 +1,6 @@
 package kr.hhplus.be.server.application.payment;
 
-import kr.hhplus.be.server.application.balance.BalanceService;
+import kr.hhplus.be.server.application.balance.BalanceUseCase;
 import kr.hhplus.be.server.application.balance.DecreaseBalanceCommand;
 import kr.hhplus.be.server.domain.order.Order;
 import kr.hhplus.be.server.domain.payment.Payment;
@@ -14,11 +14,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class BalancePaymentProcessor implements PaymentProcessor {
 
-    private final BalanceService balanceService;
+    private final BalanceUseCase balanceUseCase;
 
     @Override
     public boolean process(RequestPaymentCommand command, Order order, Payment payment) {
         DecreaseBalanceCommand decreaseCommand = command.toDecreaseBalanceCommand(order.getTotalAmount());
-        return balanceService.decreaseBalance(decreaseCommand);
+        return balanceUseCase.decreaseBalance(decreaseCommand);
     }
 }

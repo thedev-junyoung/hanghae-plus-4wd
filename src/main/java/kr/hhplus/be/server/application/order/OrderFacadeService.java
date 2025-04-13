@@ -16,15 +16,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class OrderFacadeService implements OrderUseCase {
+public class OrderFacadeService {
 
     private final ProductUseCase productService;
-    private final OrderService orderService;
+    private final OrderUseCase orderService;
     private final OrderEventUseCase orderEventService;
     private final CouponUseCase couponUseCase;
 
     @Transactional
-    @Override
     public OrderResult createOrder(CreateOrderCommand command) {
         // 1. 초기화 - 전체 금액 및 주문 아이템 리스트 준비
         Money total = Money.wons(0L);
@@ -68,5 +67,7 @@ public class OrderFacadeService implements OrderUseCase {
         // 6. 응답 객체 반환
         return OrderResult.from(order);
     }
+
+
 }
 
