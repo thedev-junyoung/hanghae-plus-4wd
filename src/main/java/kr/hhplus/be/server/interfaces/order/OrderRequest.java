@@ -18,11 +18,13 @@ public class OrderRequest {
     @NotEmpty
     private List<OrderItemRequest> items;
 
+    String couponCode;
+
     public CreateOrderCommand toCommand() {
         List<CreateOrderCommand.OrderItemCommand> itemCommands = items.stream()
                 .map(i -> new CreateOrderCommand.OrderItemCommand(i.productId, i.quantity, i.size))
                 .toList();
-        return new CreateOrderCommand(userId, itemCommands);
+        return new CreateOrderCommand(userId, itemCommands, couponCode);
     }
 
     @Getter

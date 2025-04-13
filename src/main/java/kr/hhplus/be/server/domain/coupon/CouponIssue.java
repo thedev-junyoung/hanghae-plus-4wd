@@ -33,7 +33,6 @@ public class CouponIssue {
         this.issuedAt = LocalDateTime.now();
     }
 
-    // 정적 팩토리 메서드 (선호하는 스타일이면 유지)
     public static CouponIssue create(Long userId, Coupon coupon) {
         return new CouponIssue(userId, coupon);
     }

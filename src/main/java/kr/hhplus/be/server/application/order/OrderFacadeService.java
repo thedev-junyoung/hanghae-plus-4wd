@@ -1,11 +1,11 @@
 package kr.hhplus.be.server.application.order;
 
+import kr.hhplus.be.server.application.coupon.ApplyCouponCommand;
+import kr.hhplus.be.server.application.coupon.ApplyCouponResult;
+import kr.hhplus.be.server.application.coupon.CouponUseCase;
+import kr.hhplus.be.server.application.product.*;
 import kr.hhplus.be.server.common.vo.Money;
 import org.springframework.transaction.annotation.Transactional;
-import kr.hhplus.be.server.application.product.DecreaseStockCommand;
-import kr.hhplus.be.server.application.product.GetProductDetailCommand;
-import kr.hhplus.be.server.application.product.ProductDetailResult;
-import kr.hhplus.be.server.application.product.ProductService;
 import kr.hhplus.be.server.domain.order.Order;
 import kr.hhplus.be.server.domain.order.OrderItem;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +18,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderFacadeService implements OrderUseCase {
 
-    private final ProductService productService;
+    private final ProductUseCase productService;
     private final OrderService orderService;
-    private final OrderEventService orderEventService;
+    private final OrderEventUseCase orderEventService;
+    private final CouponUseCase couponUseCase;
 
     @Transactional
     @Override
@@ -49,16 +50,22 @@ public class OrderFacadeService implements OrderUseCase {
             orderItems.add(OrderItem.of(item.productId(), item.quantity(), item.size(), itemPrice));
             total = total.add(itemTotal);
         }
+        // 3. 쿠폰 할인 적용
+        if (command.hasCouponCode()) {
+            ApplyCouponResult couponResult = couponUseCase.applyCoupon(
+                    new ApplyCouponCommand(command.userId(), command.couponCode(), total)
+            );
+            total = total.subtract(couponResult.discountAmount());
+        }
 
 
-
-        // 3. 주문 생성 및 저장
+        // 4. 주문 생성 및 저장
         Order order = orderService.createOrder(command.userId(), orderItems, total);
 
-        // 4. 결제 완료 이벤트 발행 (Outbox 패턴 기반 처리)
+        // 5. 결제 완료 이벤트 발행 (Outbox 패턴 기반 처리)
         orderEventService.recordPaymentCompletedEvent(order);
 
-        // 5. 응답 객체 반환
+        // 6. 응답 객체 반환
         return OrderResult.from(order);
     }
 }

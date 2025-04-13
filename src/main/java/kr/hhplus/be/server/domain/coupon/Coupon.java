@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.domain.coupon;
 
 import jakarta.persistence.*;
+import kr.hhplus.be.server.common.vo.Money;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -77,6 +78,14 @@ public class Coupon {
         this.remainingQuantity -= 1;
     }
 
+    public Money calculateDiscount(Money orderAmount) {
+        return switch (this.type) {
+            case FIXED -> Money.wons(this.discountRate);
+            case PERCENTAGE -> orderAmount.multiplyPercent(this.discountRate);
+        };
+    }
+
+
     static class Policy {
         public static boolean isExpired(LocalDateTime until) {
             return LocalDateTime.now().isAfter(until);
@@ -86,4 +95,6 @@ public class Coupon {
             return quantity <= 0;
         }
     }
+
+
 }

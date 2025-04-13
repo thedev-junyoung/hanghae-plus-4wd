@@ -44,6 +44,7 @@ public enum ErrorCode {
     COUPON_ALREADY_USED(HttpStatus.UNPROCESSABLE_ENTITY,  "이미 사용된 쿠폰입니다."),
     COUPON_ALREADY_ISSUED(HttpStatus.CONFLICT,  "이미 발급받은 쿠폰입니다."),
     COUPON_CODE_ALREADY_EXISTS(HttpStatus.CONFLICT, "쿠폰 코드가 이미 존재합니다."),
+    COUPON_NOT_ISSUED(HttpStatus.UNPROCESSABLE_ENTITY, "발급되지 않은 쿠폰입니다."),
 
     // 외부 시스템 연동 관련 에러
     EXTERNAL_SYSTEM_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,  "외부 시스템 연동 중 오류가 발생했습니다."),
@@ -62,6 +63,7 @@ public enum ErrorCode {
     INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "유효하지 않은 파라미터입니다.")
 
     ;
+
 
 
     private final HttpStatus status;

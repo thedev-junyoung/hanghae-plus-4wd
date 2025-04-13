@@ -61,4 +61,8 @@ public class Money {
     public String toString() {
         return value + "원";
     }
+
+    public Money multiplyPercent(int percent) {
+        return new Money((this.value * percent) / 100);
+    }
 }

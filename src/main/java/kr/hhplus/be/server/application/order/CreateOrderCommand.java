@@ -7,19 +7,16 @@ import java.util.List;
 
 public record CreateOrderCommand(
         Long userId,
-        List<OrderItemCommand> items
+        List<OrderItemCommand> items,
+        String couponCode
 ) {
+    public boolean hasCouponCode() {
+        return couponCode != null && !couponCode.isBlank();
+    }
+
     public record OrderItemCommand(
             Long productId,
             int quantity,
             int size
     ) {}
-
-    public GetProductDetailCommand toGetProductDetailCommand() {
-        return new GetProductDetailCommand(items.get(0).productId);
-    }
-
-    public DecreaseStockCommand toDecreaseStockCommand() {
-        return new DecreaseStockCommand(items.get(0).productId, items.get(0).size, items.get(0).quantity);
-    }
 }

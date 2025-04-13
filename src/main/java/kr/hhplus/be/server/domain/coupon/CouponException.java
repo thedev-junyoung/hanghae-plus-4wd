@@ -26,4 +26,9 @@ public class CouponException extends BusinessException {
         }
     }
 
+    public static class NotIssuedException extends BusinessException {
+        public NotIssuedException(Long userId, String code) {
+            super(ErrorCode.COUPON_NOT_ISSUED, "발급되지 않은 쿠폰입니다: userId=" + userId + ", code=" + code);
+        }
+    }
 }
