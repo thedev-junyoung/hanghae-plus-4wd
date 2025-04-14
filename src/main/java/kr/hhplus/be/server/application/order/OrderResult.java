@@ -41,7 +41,7 @@ public record OrderResult(
                     item.getProductId(),
                     item.getQuantity(),
                     item.getSize(),
-                    item.getPrice().value()
+                    item.getPrice()
             );
         }
     }

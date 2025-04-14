@@ -42,7 +42,7 @@ public class Order {
         }
 
         long expectedTotal = items.stream()
-                .mapToLong(item -> item.getPrice().multiply(item.getQuantity()).value())
+                .mapToLong(item -> Money.from(item.getPrice()).multiply(item.getQuantity()).value())
                 .sum();
 
         if (expectedTotal != totalAmount.value()) {
