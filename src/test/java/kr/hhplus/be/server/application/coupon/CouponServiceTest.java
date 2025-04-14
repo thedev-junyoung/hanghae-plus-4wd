@@ -5,6 +5,7 @@ import kr.hhplus.be.server.domain.coupon.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -35,17 +36,16 @@ class CouponServiceTest {
     private final String couponCode = "TEST10";
     private final long userId = 1L;
 
+
     @Test
     @DisplayName("쿠폰 정상 발급 성공")
     void issueCoupon_success() {
         // given
         Coupon coupon = createValidCoupon();
-        CouponIssue issued = new CouponIssue(userId, coupon);
         IssueLimitedCouponCommand command = new IssueLimitedCouponCommand(userId, couponCode);
 
         given(couponReader.findByCode(couponCode)).willReturn(coupon);
         given(couponIssueWriter.hasIssued(userId, coupon.getId())).willReturn(false);
-        given(couponIssueWriter.save(userId, coupon)).willReturn(issued);
 
         // when
         CouponResult result = couponService.issueLimitedCoupon(command);
@@ -53,8 +53,14 @@ class CouponServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.userId()).isEqualTo(userId);
-        verify(couponReader).findByCode(couponCode);
-        verify(couponIssueWriter).save(userId, coupon);
+
+        // captor 생성
+        ArgumentCaptor<CouponIssue> captor = ArgumentCaptor.forClass(CouponIssue.class);
+        verify(couponIssueWriter).save(captor.capture()); // 실제로 넘긴 객체 캡처
+
+        CouponIssue saved = captor.getValue();
+        assertThat(saved.getUserId()).isEqualTo(userId);
+        assertThat(saved.getCoupon()).isEqualTo(coupon); // 같은 객체인지 검증
     }
 
     @Test
@@ -82,12 +88,15 @@ class CouponServiceTest {
                 LocalDateTime.now().minusDays(10),
                 LocalDateTime.now().minusDays(1)
         );
+
         given(couponReader.findByCode(couponCode)).willReturn(coupon);
 
         // when & then
         assertThrows(CouponException.ExpiredException.class, () ->
-                couponService.issueLimitedCoupon(new IssueLimitedCouponCommand(userId, couponCode)));
+                couponService.issueLimitedCoupon(new IssueLimitedCouponCommand(userId, couponCode))
+        );
     }
+
 
     @Test
     @DisplayName("수량 소진된 쿠폰일 경우 예외 발생")
@@ -98,16 +107,19 @@ class CouponServiceTest {
                 CouponType.PERCENTAGE,
                 20,
                 10,
-                0,  // 남은 수량 없음
+                0,
                 LocalDateTime.now().minusDays(1),
                 LocalDateTime.now().plusDays(1)
         );
+
         given(couponReader.findByCode(couponCode)).willReturn(coupon);
 
         // when & then
         assertThrows(CouponException.AlreadyExhaustedException.class, () ->
-                couponService.issueLimitedCoupon(new IssueLimitedCouponCommand(userId, couponCode)));
+                couponService.issueLimitedCoupon(new IssueLimitedCouponCommand(userId, couponCode))
+        );
     }
+
 
     @Test
     @DisplayName("쿠폰 적용 성공")
@@ -116,9 +128,11 @@ class CouponServiceTest {
         Coupon coupon = createValidCoupon();
         Money orderAmount = Money.wons(10000);
         Money expectedDiscount = coupon.calculateDiscount(orderAmount);
+        CouponIssue issue = CouponIssue.create(userId, coupon);
 
         given(couponReader.findByCode(couponCode)).willReturn(coupon);
-        given(couponIssueReader.hasIssued(userId, coupon.getId())).willReturn(true);
+        given(couponIssueReader.findByUserIdAndCouponId(userId, coupon.getId()))
+                .willReturn(java.util.Optional.of(issue));
 
         // when
         ApplyCouponResult result = couponService.applyCoupon(
@@ -128,6 +142,7 @@ class CouponServiceTest {
         // then
         assertThat(result.couponCode()).isEqualTo(couponCode);
         assertThat(result.discountAmount()).isEqualTo(expectedDiscount);
+
     }
 
     @Test
@@ -135,14 +150,15 @@ class CouponServiceTest {
     void applyCoupon_fail_ifNotIssued() {
         // given
         Coupon coupon = createValidCoupon();
+
         given(couponReader.findByCode(couponCode)).willReturn(coupon);
-        given(couponIssueReader.hasIssued(userId, coupon.getId())).willReturn(false);
+        given(couponIssueReader.findByUserIdAndCouponId(userId, coupon.getId()))
+                .willReturn(java.util.Optional.empty());  // 변경 포인트!
 
         // when & then
         assertThrows(CouponException.NotIssuedException.class, () ->
                 couponService.applyCoupon(new ApplyCouponCommand(userId, couponCode, Money.wons(10000))));
     }
-
     private Coupon createValidCoupon() {
         return Coupon.create(
                 couponCode,

@@ -14,8 +14,8 @@ public class CouponIssueWriterImpl implements CouponIssueWriter {
     }
 
     @Override
-    public CouponIssue save(Long userId, Coupon coupon) {
-        // TODO: 실제 DB 저장 로직 구현 예정
-        throw new UnsupportedOperationException("Not implemented yet");
+    public CouponIssue save(CouponIssue issue) {
+        return null;
     }
+
 }

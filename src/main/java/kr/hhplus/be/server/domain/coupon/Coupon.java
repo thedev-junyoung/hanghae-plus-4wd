@@ -64,6 +64,13 @@ public class Coupon {
         return Policy.isExhausted(remainingQuantity);
     }
 
+    /**
+     * 쿠폰 정책 자체의 유효성을 검증
+     * - 유효 기간이 지났는지 확인
+     * - 발급 가능한 수량이 남아있는지 확인
+     * 해당 검증은 쿠폰이 발급되거나 사용할 수 있는 상태인지 판단하는
+     * "정책 관점"의 검증
+     */
     public void validateUsable() {
         if (isExpired()) {
             throw new CouponException.ExpiredException();
