@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.util.List;
-import java.util.UUID;
 
 import static kr.hhplus.be.server.common.vo.Money.wons;
 import static org.assertj.core.api.Assertions.assertThat;
