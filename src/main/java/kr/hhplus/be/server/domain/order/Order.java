@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 
 @Entity
@@ -36,7 +37,8 @@ public class Order {
 
     private LocalDateTime createdAt;
 
-    public static Order create(String id, Long userId, List<OrderItem> items, Money totalAmount) {
+    public static Order create(Long userId, List<OrderItem> items, Money totalAmount) {
+        String orderId = UUID.randomUUID().toString();
         if (items == null || items.isEmpty()) {
             throw new OrderException.EmptyItemException();
         }
@@ -50,7 +52,7 @@ public class Order {
         }
 
         Order order = new Order();
-        order.id = id;
+        order.id = orderId;
         order.userId = userId;
         order.items = items;
         order.totalAmount = totalAmount.value();

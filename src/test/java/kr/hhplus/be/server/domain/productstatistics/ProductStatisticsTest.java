@@ -18,7 +18,7 @@ class ProductStatisticsTest {
         assertThat(stats.getProductId()).isEqualTo(1L);
         assertThat(stats.getStatDate()).isEqualTo(LocalDate.of(2025, 4, 8));
         assertThat(stats.getSalesCount()).isZero();
-        assertThat(stats.getSalesAmount()).isEqualTo(Money.wons(0));
+        assertThat(stats.getSalesAmount()).isEqualTo(0L);
     }
 
     @Test
@@ -30,7 +30,7 @@ class ProductStatisticsTest {
         stats.addSales(3, Money.wons(4000)); // 2차 추가
 
         assertThat(stats.getSalesCount()).isEqualTo(5); // 2 + 3
-        assertThat(stats.getSalesAmount()).isEqualTo(Money.wons(5000 * 2 + 4000 * 3));
+        assertThat(stats.getSalesAmount()).isEqualTo(5000 * 2 + 4000 * 3L);
     }
 
     @Test

@@ -21,8 +21,7 @@ public class OrderService implements OrderUseCase {
 
     @Transactional
     public Order createOrder(Long userId, List<OrderItem> items, Money totalAmount) {
-        String orderId = UUID.randomUUID().toString();
-        Order order = Order.create(orderId, userId, items, totalAmount);
+        Order order = Order.create(userId, items, totalAmount);
         orderRepository.save(order);
         return order;
     }

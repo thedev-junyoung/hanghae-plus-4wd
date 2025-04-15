@@ -44,7 +44,7 @@ class ProductStatisticsServiceTest {
         verify(repository).save(argThat(stats ->
                 stats.getProductId().equals(productId) &&
                         stats.getSalesCount() == quantity &&
-                        stats.getSalesAmount().value() == amount * quantity
+                        stats.getSalesAmount() == amount * quantity
         ));
     }
 
@@ -65,7 +65,7 @@ class ProductStatisticsServiceTest {
 
         // then
         assertThat(existing.getSalesCount()).isEqualTo(quantity);
-        assertThat(existing.getSalesAmount().value()).isEqualTo(quantity * amount);
+        assertThat(existing.getSalesAmount()).isEqualTo(quantity * amount);
         verify(repository).save(existing);
     }
 }

@@ -33,7 +33,6 @@ class OrderEventServiceTest {
     void record_payment_completed_event_success() {
         // given
         Order order = Order.create(
-                UUID.randomUUID().toString(),
                 1L,
                 List.of(OrderItem.of(100L, 2, 260, wons(10000))),
                 wons(20000)
