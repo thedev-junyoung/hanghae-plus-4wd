@@ -1,4 +1,4 @@
--- 공통 VO: Money는 long으로 저장됩니다
+-- DB 스키마. 01-schema.sql
 
 -- Product
 CREATE TABLE product (
