@@ -20,9 +20,4 @@ public class ProductStatisticRepositoryImpl implements ProductStatisticsReposito
     public void save(ProductStatistics stats) {
 
     }
-
-    @Override
-    public List<ProductStatistics> findTopSellingProductsAfter(LocalDateTime from, int limit) {
-        return List.of();
-    }
 }

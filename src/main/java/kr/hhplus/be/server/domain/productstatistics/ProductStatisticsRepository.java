@@ -10,5 +10,4 @@ import java.util.Optional;
 public interface ProductStatisticsRepository {
     Optional<ProductStatistics> findByProductIdAndStatDate(Long productId, LocalDate statDate);
     void save(ProductStatistics stats);
-    List<ProductStatistics> findTopSellingProductsAfter(LocalDateTime from, int limit);
 }

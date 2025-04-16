@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepository{
-    Collection<Product> findTopSellingProducts();
-    List<Product> findAll();
     Page<Product> findAll(Pageable pageable);
 
     void save(Product domain);
