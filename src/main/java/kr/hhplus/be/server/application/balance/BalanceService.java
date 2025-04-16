@@ -6,6 +6,7 @@ import kr.hhplus.be.server.domain.balance.BalanceRepository;
 import kr.hhplus.be.server.common.vo.Money;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -27,6 +28,7 @@ public class BalanceService implements BalanceUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BalanceResult getBalance(Long userId) {
         Balance balance = balanceRepository.findByUserId(userId)
                 .orElseThrow(() -> new BalanceException.NotFoundException(userId));
