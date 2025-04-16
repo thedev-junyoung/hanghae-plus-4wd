@@ -2,6 +2,7 @@ package kr.hhplus.be.server.infrastructure.product;
 
 import kr.hhplus.be.server.application.productstatistics.ProductSalesInfo;
 import kr.hhplus.be.server.domain.productstatistics.ProductStatistics;
+import kr.hhplus.be.server.domain.productstatistics.ProductStatisticsId;
 import kr.hhplus.be.server.domain.productstatistics.ProductStatisticsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -18,7 +19,7 @@ public class ProductStatisticRepositoryImpl implements ProductStatisticsReposito
 
     @Override
     public Optional<ProductStatistics> findByProductIdAndStatDate(Long productId, LocalDate statDate) {
-        return jpaRepository.findByProductIdAndStatDate(productId, statDate);
+        return jpaRepository.findById(new ProductStatisticsId(productId, statDate));
     }
 
     @Override
@@ -28,8 +29,16 @@ public class ProductStatisticRepositoryImpl implements ProductStatisticsReposito
 
     @Override
     public List<ProductSalesInfo> findTopSellingProducts(LocalDate from, LocalDate to, int limit) {
-        return jpaRepository.findTopSellingProducts(from, to).stream()
+        return jpaRepository.findByStatDateBetween(from, to).stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        ProductStatistics::getProductId,
+                        java.util.stream.Collectors.summingInt(ProductStatistics::getSalesCount)
+                ))
+                .entrySet().stream()
+                .map(entry -> new ProductSalesInfo(entry.getKey(), (long) entry.getValue()))
+                .sorted(java.util.Comparator.comparing(ProductSalesInfo::salesCount).reversed())
                 .limit(limit)
                 .toList();
     }
+
 }
