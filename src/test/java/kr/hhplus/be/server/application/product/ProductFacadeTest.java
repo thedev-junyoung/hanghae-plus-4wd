@@ -34,7 +34,7 @@ class ProductFacadeTest {
         // given
         PopularProductCriteria criteria = new PopularProductCriteria(3, 5);
 
-        ProductSalesInfo info = new ProductSalesInfo(1L, 10);
+        ProductSalesInfo info = new ProductSalesInfo(1L, 10L);
         when(statisticsUseCase.getTopSellingProducts(criteria))
                 .thenReturn(List.of(info));
 
