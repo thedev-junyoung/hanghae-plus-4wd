@@ -22,9 +22,13 @@ class OrderServiceIntegrationTest { // DB 반영이 중요한 흐름만 최소�
     @Autowired
     OrderService orderService;
 
-// Facade에서 주문 생성 테스트를 작성했기 때문에 중복 발생
-    // 주문을 생성하고, 영속성 컨텍스트 및 DB에 정상 저장되는지 검증
-    // Product ID = 1 (New Balance 993), 수량 2, 가격 10,000 → 총 20,000
+    /*
+     * [테스트 범위 조정]
+     * 주문 생성 흐름은 OrderFacadeServiceIntegrationTest에서 전체 흐름을 검증함.
+     * 따라서 본 테스트에서는 OrderService의 고유 책임인 상태 변경(markConfirmed) DB 반영 여부만 검증.
+     */
+//    주문을 생성하고, 영속성 컨텍스트 및 DB에 정상 저장되는지 검증
+//    Product ID = 1 (New Balance 993), 수량 2, 가격 10,000 → 총 20,000
 //    @Test
 //    @DisplayName("주문을 생성하고 DB에 저장할 수 있다")
 //    void createOrder_success() {
