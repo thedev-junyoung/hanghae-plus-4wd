@@ -21,8 +21,8 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public void save(Product domain) {
-        jpaRepository.save(domain);
+    public Product save(Product domain) {
+        return jpaRepository.save(domain);
     }
 
     @Override

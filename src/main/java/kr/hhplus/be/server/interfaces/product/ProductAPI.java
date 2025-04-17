@@ -53,7 +53,9 @@ public interface ProductAPI {
     @GetMapping("/{productId}")
     ResponseEntity<CustomApiResponse<ProductResponse.ProductDetailResponse>> getProduct(
             @Parameter(description = "상품 ID", example = "1001")
-            @PathVariable Long productId
+            @PathVariable Long productId,
+            @Parameter(description = "사이즈", example = "260")
+            @RequestParam(defaultValue = "0") int size
     );
 
     @Operation(summary = "인기 판매 상품 조회", description = "최근 3일간 판매량이 높은 상위 5개 스니커즈 상품 정보를 조회합니다.")

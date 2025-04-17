@@ -5,6 +5,7 @@ import kr.hhplus.be.server.domain.product.ProductStockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -16,6 +17,11 @@ public class ProductStockRepositoryImpl implements ProductStockRepository {
     @Override
     public Optional<ProductStock> findByProductIdAndSize(Long productId, int size) {
         return jpaRepository.findByProductIdAndSize(productId, size);
+    }
+
+    @Override
+    public List<ProductStock> findAllByProductId(Long productId) {
+        return List.of();
     }
 
     @Override

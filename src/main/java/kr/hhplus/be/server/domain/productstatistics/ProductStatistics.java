@@ -28,7 +28,7 @@ public class ProductStatistics {
         return new ProductStatistics(new ProductStatisticsId(productId, date), 0, Money.wons(0));
     }
 
-    private ProductStatistics(ProductStatisticsId id, int salesCount, Money salesAmount) {
+    public ProductStatistics(ProductStatisticsId id, int salesCount, Money salesAmount) {
         this.id = id;
         this.salesCount = salesCount;
         this.salesAmount = salesAmount.value();

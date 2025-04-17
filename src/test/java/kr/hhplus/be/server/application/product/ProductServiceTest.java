@@ -60,7 +60,7 @@ class ProductServiceTest {
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
 
         // when
-        ProductDetailResult result = productService.getProductDetail(new GetProductDetailCommand(1L));
+        ProductDetailResult result = productService.getProductDetail(new GetProductDetailCommand(1L, 260));
 
         // then
         assertThat(result.product().name()).isEqualTo("Jordan 1");
@@ -73,7 +73,7 @@ class ProductServiceTest {
         when(productRepository.findById(99L)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> productService.getProductDetail(new GetProductDetailCommand(99L)))
+        assertThatThrownBy(() -> productService.getProductDetail(new GetProductDetailCommand(99L,260)))
                 .isInstanceOf(ProductException.NotFoundException.class);
     }
 

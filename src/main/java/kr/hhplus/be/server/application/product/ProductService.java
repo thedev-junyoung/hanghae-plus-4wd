@@ -4,6 +4,7 @@ import kr.hhplus.be.server.domain.product.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class ProductService implements ProductUseCase {
     private final ProductStockRepository productStockRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public ProductListResult getProductList(GetProductListCommand command) {
         PageRequest pageRequest = PageRequest.of(command.page(), command.size(), command.getSort());
 
@@ -34,11 +36,12 @@ public class ProductService implements ProductUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductDetailResult getProductDetail(GetProductDetailCommand command) {
         Product product = productRepository.findById(command.productId())
                 .orElseThrow(() -> new ProductException.NotFoundException(command.productId()));
 
-        int stock = productStockRepository.findByProductId(product.getId())
+        int stock = productStockRepository.findByProductIdAndSize(product.getId(), command.size())
                 .map(ProductStock::getStockQuantity)
                 .orElse(0);
 

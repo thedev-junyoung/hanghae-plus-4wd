@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface ProductRepository{
     Page<Product> findAll(Pageable pageable);
 
-    void save(Product domain);
+    Product save(Product domain);
     Optional<Product> findById(Long aLong);
 
 }

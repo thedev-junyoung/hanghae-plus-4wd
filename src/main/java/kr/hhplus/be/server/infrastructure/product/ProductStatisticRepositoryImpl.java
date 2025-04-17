@@ -28,6 +28,11 @@ public class ProductStatisticRepositoryImpl implements ProductStatisticsReposito
     }
 
     @Override
+    public List<ProductStatistics> saveAll(List<ProductStatistics> stats) {
+        return jpaRepository.saveAll(stats);
+    }
+
+    @Override
     public List<ProductSalesInfo> findTopSellingProducts(LocalDate from, LocalDate to, int limit) {
         return jpaRepository.findByStatDateBetween(from, to).stream()
                 .collect(java.util.stream.Collectors.groupingBy(
@@ -39,6 +44,16 @@ public class ProductStatisticRepositoryImpl implements ProductStatisticsReposito
                 .sorted(java.util.Comparator.comparing(ProductSalesInfo::salesCount).reversed())
                 .limit(limit)
                 .toList();
+    }
+
+    @Override
+    public Optional<ProductStatistics> findById(ProductStatisticsId id) {
+        return jpaRepository.findById(id);
+    }
+
+    @Override
+    public void deleteAll() {
+        jpaRepository.deleteAll();
     }
 
 }
