@@ -1,6 +1,5 @@
 package kr.hhplus.be.server.application.product;
 
-import kr.hhplus.be.server.application.productstatistics.ProductSalesInfo;
 import kr.hhplus.be.server.common.vo.Money;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductRepository;

@@ -1,7 +1,5 @@
 package kr.hhplus.be.server.application.order;
 
-import kr.hhplus.be.server.application.product.DecreaseStockCommand;
-import kr.hhplus.be.server.application.product.GetProductDetailCommand;
 
 import java.util.List;
 

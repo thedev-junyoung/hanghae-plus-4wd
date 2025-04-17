@@ -1,6 +1,5 @@
 package kr.hhplus.be.server.infrastructure.product;
 
-import kr.hhplus.be.server.application.productstatistics.ProductSalesInfo;
 import kr.hhplus.be.server.domain.productstatistics.ProductStatistics;
 import kr.hhplus.be.server.domain.productstatistics.ProductStatisticsId;
 import org.springframework.data.jpa.repository.JpaRepository;
