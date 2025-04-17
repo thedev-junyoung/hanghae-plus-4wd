@@ -1,7 +1,5 @@
 package kr.hhplus.be.server.application.payment;
 
-import kr.hhplus.be.server.application.balance.BalanceUseCase;
-import kr.hhplus.be.server.application.order.OrderUseCase;
 import kr.hhplus.be.server.common.vo.Money;
 import kr.hhplus.be.server.domain.balance.Balance;
 import kr.hhplus.be.server.domain.balance.BalanceRepository;
