@@ -13,6 +13,11 @@ public class CouponRepositoryImpl implements CouponRepository {
     private final CouponJpaRepository jpaRepository;
 
     @Override
+    public void save(Coupon coupon) {
+        jpaRepository.save(coupon);
+    }
+
+    @Override
     public Coupon findByCode(String code) {
         return jpaRepository.findByCode(code)
                 .orElseThrow(() -> new CouponException.NotFoundException(code));
