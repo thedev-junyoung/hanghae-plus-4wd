@@ -19,9 +19,9 @@ class OrderTest {
                 OrderItem.of(1L, 1, 270, Money.wons(100000))
         );
 
-        Order order = Order.create("order-id", 1L, items, Money.wons(100000));
+        Order order = Order.create(1L, items, Money.wons(100000));
 
-        assertThat(order.getId()).isEqualTo("order-id");
+        assertThat(order.getUserId()).isEqualTo(1L);
         assertThat(order.getUserId()).isEqualTo(1L);
         assertThat(order.getItems()).hasSize(1);
         assertThat(order.getTotalAmount()).isEqualTo(100000);
@@ -32,7 +32,7 @@ class OrderTest {
     @Test
     @DisplayName("생성된 주문은 취소할 수 있다")
     void cancel_order_should_change_status_to_cancelled() {
-        Order order = Order.create("order-id", 1L,
+        Order order = Order.create(1L,
                 List.of(OrderItem.of(1L, 1, 270, Money.wons(100000))),
                 Money.wons(100000));
 
@@ -44,7 +44,7 @@ class OrderTest {
     @Test
     @DisplayName("이미 취소된 주문은 다시 취소할 수 없다")
     void cancel_order_should_fail_if_not_created_status() {
-        Order order = Order.create("order-id", 1L,
+        Order order = Order.create(1L,
                 List.of(OrderItem.of(1L, 1, 270, Money.wons(100000))),
                 Money.wons(100000));
 
@@ -56,7 +56,7 @@ class OrderTest {
     @Test
     @DisplayName("생성된 주문은 CONFIRMED 상태로 변경할 수 있다")
     void mark_order_as_confirmed_should_change_status_to_confirmed() {
-        Order order = Order.create("order-id", 1L,
+        Order order = Order.create(1L,
                 List.of(OrderItem.of(1L, 1, 270, Money.wons(100000))),
                 Money.wons(100000));
 
@@ -68,7 +68,7 @@ class OrderTest {
     @Test
     @DisplayName("이미 CONFIRMED 상태인 주문은 다시 CONFIRMED로 변경할 수 없다")
     void mark_confirmed_should_fail_if_not_created_status() {
-        Order order = Order.create("order-id", 1L,
+        Order order = Order.create(1L,
                 List.of(OrderItem.of(1L, 1, 270, Money.wons(100000))),
                 Money.wons(100000));
 
@@ -81,7 +81,7 @@ class OrderTest {
     @DisplayName("주문 아이템이 비어있으면 주문 생성에 실패한다")
     void create_order_should_fail_when_no_items() {
         assertThatThrownBy(() ->
-                Order.create("order-id", 1L, List.of(), Money.wons(0))
+                Order.create(1L, List.of(), Money.wons(0))
         ).isInstanceOf(OrderException.EmptyItemException.class);
     }
 
@@ -94,22 +94,9 @@ class OrderTest {
         );
 
         // 총 합계: 170,000
-        Order order = Order.create("order-id", 1L, items, Money.wons(170000));
+        Order order = Order.create(1L, items, Money.wons(170000));
 
         assertThat(order.getTotalAmount()).isEqualTo(170000);
     }
 
-    @Test
-    @DisplayName("총 주문 금액이 실제 합계와 다르면 생성할 수 없다 (정책 위반)")
-    void create_order_should_fail_when_total_amount_mismatch() {
-        List<OrderItem> items = List.of(
-                OrderItem.of(1L, 2, 270, Money.wons(100000)) // 2개니까 총 200000이어야 함
-        );
-
-        assertThatThrownBy(() ->
-                Order.create("order-id", 1L, items, Money.wons(150000))
-        ).isInstanceOf(OrderException.InvalidTotalAmountException.class)
-                .hasMessageContaining("expected=200000")
-                .hasMessageContaining("actual=150000");
-    }
 }

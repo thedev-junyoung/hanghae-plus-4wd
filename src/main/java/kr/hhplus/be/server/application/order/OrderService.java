@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 
 @Service
@@ -19,14 +18,12 @@ public class OrderService implements OrderUseCase {
 
     private final OrderRepository orderRepository;
 
-    @Transactional
     public Order createOrder(Long userId, List<OrderItem> items, Money totalAmount) {
-        String orderId = UUID.randomUUID().toString();
-        Order order = Order.create(orderId, userId, items, totalAmount);
+        Order order = Order.create(userId, items, totalAmount);
         orderRepository.save(order);
         return order;
     }
-
+    @Transactional(readOnly = true)
     public Order getOrderForPayment(String orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderException.NotFoundException(orderId));
@@ -34,7 +31,6 @@ public class OrderService implements OrderUseCase {
         return order;
     }
 
-    @Transactional
     public void markConfirmed(Order order) {
         order.markConfirmed();
         orderRepository.save(order);

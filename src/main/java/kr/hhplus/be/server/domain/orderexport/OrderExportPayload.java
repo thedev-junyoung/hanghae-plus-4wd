@@ -32,7 +32,7 @@ public class OrderExportPayload {
                                 item.getProductId(),
                                 item.getQuantity(),
                                 item.getSize(),
-                                item.getPrice().value()
+                                item.getPrice()
                         ))
                         .toList(),
                 order.getTotalAmount()

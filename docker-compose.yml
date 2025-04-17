@@ -11,6 +11,8 @@ services:
       - MYSQL_DATABASE=hhplus
     volumes:
       - ./data/mysql/:/var/lib/mysql
+      - ./init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./init/02-data.sql:/docker-entrypoint-initdb.d/02-data.sql
 
 networks:
   default:

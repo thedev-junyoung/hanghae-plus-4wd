@@ -31,4 +31,10 @@ public class CouponException extends BusinessException {
             super(ErrorCode.COUPON_NOT_ISSUED, "발급되지 않은 쿠폰입니다: userId=" + userId + ", code=" + code);
         }
     }
+    public static class NotFoundException extends BusinessException {
+        public NotFoundException(String code) {
+            super(ErrorCode.COUPON_NOT_FOUND, "쿠폰을 찾을 수 없습니다: code=" + code);
+        }
+    }
+
 }
