@@ -33,7 +33,7 @@ public class OrderFacadeService {
         for (CreateOrderCommand.OrderItemCommand item : command.items()) {
             // 2-1. 상품 상세 조회 (가격 포함)
             ProductDetailResult product = productService.getProductDetail(
-                    new GetProductDetailCommand(item.productId())
+                    new GetProductDetailCommand(item.productId(), item.size())
             );
 
             // 2-2. 상품 재고 차감

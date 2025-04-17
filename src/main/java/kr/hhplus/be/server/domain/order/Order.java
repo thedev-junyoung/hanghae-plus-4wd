@@ -38,24 +38,18 @@ public class Order {
     private LocalDateTime createdAt;
 
     public static Order create(Long userId, List<OrderItem> items, Money totalAmount) {
-        String orderId = UUID.randomUUID().toString();
         if (items == null || items.isEmpty()) {
             throw new OrderException.EmptyItemException();
         }
-
-        long expectedTotal = items.stream()
-                .mapToLong(item -> Money.from(item.getPrice()).multiply(item.getQuantity()).value())
-                .sum();
-
-        if (expectedTotal != totalAmount.value()) {
-            throw new OrderException.InvalidTotalAmountException(expectedTotal, totalAmount.value());
+        if (totalAmount.isNegative()) {
+            throw new OrderException.InvalidTotalAmountException(0, totalAmount.value());
         }
 
         Order order = new Order();
-        order.id = orderId;
+        order.id = UUID.randomUUID().toString();
         order.userId = userId;
         order.items = items;
-        order.totalAmount = totalAmount.value();
+        order.totalAmount = totalAmount.value(); // 최종 금액만 세팅
         order.status = OrderStatus.CREATED;
         order.createdAt = LocalDateTime.now();
 
@@ -65,6 +59,8 @@ public class Order {
 
         return order;
     }
+
+
 
     public void cancel() {
         if (!status.canCancel()) {
