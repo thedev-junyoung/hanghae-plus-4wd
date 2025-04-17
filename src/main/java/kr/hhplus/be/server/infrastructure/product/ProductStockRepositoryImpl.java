@@ -2,24 +2,37 @@ package kr.hhplus.be.server.infrastructure.product;
 
 import kr.hhplus.be.server.domain.product.ProductStock;
 import kr.hhplus.be.server.domain.product.ProductStockRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class ProductStockRepositoryImpl implements ProductStockRepository {
-    @Override
-    public Optional<ProductStock> findByProductIdAndSize(Long productId, int size) {
-        return Optional.empty();
-    }
+
+    private final ProductStockJpaRepository jpaRepository;
 
     @Override
-    public ProductStock save(ProductStock stock) {
-        return null;
+    public Optional<ProductStock> findByProductIdAndSize(Long productId, int size) {
+        return jpaRepository.findByProductIdAndSize(productId, size);
     }
 
     @Override
     public Optional<ProductStock> findByProductId(Long id) {
-        return Optional.empty();
+        return jpaRepository.findByProductId(id);
     }
+
+    @Override
+    public ProductStock save(ProductStock stock) {
+        return jpaRepository.save(stock);
+    }
+
+    @Override
+    public List<ProductStock> findAllByProductId(Long productId) {
+        return jpaRepository.findAllByProductId(productId);
+    }
+
+
 }

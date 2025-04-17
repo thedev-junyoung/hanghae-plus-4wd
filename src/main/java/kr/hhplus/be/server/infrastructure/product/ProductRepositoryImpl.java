@@ -2,39 +2,31 @@ package kr.hhplus.be.server.infrastructure.product;
 
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class ProductRepositoryImpl implements ProductRepository {
 
-    @Override
-    public Collection<Product> findTopSellingProducts() {
-        return List.of();
-    }
-
-    @Override
-    public List<Product> findAll() {
-        return List.of();
-    }
+    private final ProductJpaRepository jpaRepository;
 
     @Override
     public Page<Product> findAll(Pageable pageable) {
-        return null;
+        return jpaRepository.findAll(pageable);
     }
 
     @Override
-    public void save(Product domain) {
-
+    public Product save(Product domain) {
+        return jpaRepository.save(domain);
     }
 
     @Override
-    public Optional<Product> findById(Long aLong) {
-        return Optional.empty();
+    public Optional<Product> findById(Long id) {
+        return jpaRepository.findById(id);
     }
 }
