@@ -39,8 +39,11 @@ class ProductServiceTest {
         when(productRepository.findAll(any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of(product)));
 
-        when(productStockRepository.findByProductId(product.getId()))
-                .thenReturn(Optional.of(ProductStock.of(product.getId(), 270, 5)));
+        when(productStockRepository.findAllByProductId(product.getId()))
+                .thenReturn(List.of(
+                        ProductStock.of(product.getId(), 270, 5),
+                        ProductStock.of(product.getId(), 280, 3)
+                ));
 
         // when
         ProductListResult result = productService.getProductList(new GetProductListCommand(0, 10, null));

@@ -23,12 +23,12 @@ class PaymentServiceIntegrationTest {
     private PaymentRepository paymentRepository;
 
     @Test
-    @DisplayName("결제 성공 정보를 저장하고 DB에 저장된다")
-    void recordSuccess_shouldPersistToDatabase() {
+    @DisplayName("결제 성공 정보를 저장하고 실제 DB에 저장된다 (order-1 사용)")
+    void recordSuccess_shouldPersistToDatabase_usingExistingOrder() {
         // given
-        String orderId = "ORDER-456";
-        long amount = 15000L;
-        String method = "BALANCE";
+        String orderId = "order-1"; // 실제 DB에 존재하는 주문 ID
+        long amount = 398000L;
+        String method = "CARD";
 
         PaymentCommand command = new PaymentCommand(orderId, Money.wons(amount), method);
 

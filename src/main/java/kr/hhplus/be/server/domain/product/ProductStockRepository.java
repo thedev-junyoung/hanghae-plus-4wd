@@ -6,7 +6,8 @@ import java.util.Optional;
 public interface ProductStockRepository {
     ProductStock save(ProductStock stock);
 
-    Optional<ProductStock> findByProductId(Long id);
+    List<ProductStock> findAllByProductId(Long productId);
     Optional<ProductStock> findByProductIdAndSize(Long productId, int size);
-    List<ProductStock> findAllByProductId(Long productId); // 재고 전체 필요할 경우
+
+    Optional<ProductStock> findByProductId(Long id);
 }

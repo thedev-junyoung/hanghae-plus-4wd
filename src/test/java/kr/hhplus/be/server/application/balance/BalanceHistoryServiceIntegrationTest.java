@@ -10,9 +10,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+
 @SpringBootTest
 @Transactional
-class BalanceHistoryServiceIntegrationTest { // 실제로 DB에 저장되었는지 확인
+class BalanceHistoryServiceIntegrationTest {
 
     @Autowired
     BalanceHistoryService service;
@@ -23,14 +25,21 @@ class BalanceHistoryServiceIntegrationTest { // 실제로 DB에 저장되었는�
     @Test
     @DisplayName("recordHistory가 호출되면 DB에 히스토리가 저장된다")
     void recordHistory_persistsToDatabase() {
-        RecordBalanceHistoryCommand command = new RecordBalanceHistoryCommand(1L, 5000L, BalanceChangeType.CHARGE,"충전");
+        // given
+        Long userId = 100L;
+        String reason = "충전 테스트";
 
+        RecordBalanceHistoryCommand command = new RecordBalanceHistoryCommand(
+                userId, 5000L, BalanceChangeType.CHARGE, reason
+        );
+
+        // when
         service.recordHistory(command);
 
-        BalanceHistory history = repository.findAllByUserId(1L).get(0);
-
-        assertThat(history.getUserId()).isEqualTo(1L);
+        // then
+        BalanceHistory history = repository.findAllByUserId(userId).get(0);
+        assertThat(history.getUserId()).isEqualTo(userId);
         assertThat(history.getAmount()).isEqualTo(5000L);
-        assertThat(history.getReason()).isEqualTo("충전");
+        assertThat(history.getReason()).isEqualTo(reason);
     }
 }

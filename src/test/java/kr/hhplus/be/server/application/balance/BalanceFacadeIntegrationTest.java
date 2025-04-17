@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -28,27 +27,27 @@ class BalanceFacadeIntegrationTest {
     private BalanceHistoryRepository balanceHistoryRepository;
 
     @Test
-    @DisplayName("사용자 잔액이 10,000원일 때 5,000원을 충전하면 총 15,000원이 되며, 충전 히스토리가 기록된다.")
-    void charge_success() {
+    @DisplayName("초기 잔액 500,000원인 userId=100 유저가 5,000원을 충전하면 잔액은 505,000원이 된다.")
+    void charge_success_using_seeded_data() {
         // given
-        Long userId = 1L;
-        Money initial = Money.wons(10_000);
+        Long userId = 100L; // 데이터베이스에 이미 존재하는 유저
         Money charge = Money.wons(5_000);
-        Balance existing = Balance.createNew(null, userId, initial);
-        balanceRepository.save(existing);
 
-        ChargeBalanceCriteria criteria = ChargeBalanceCriteria.of(userId, charge.value(), "테스트 충전");
+        Balance original = balanceRepository.findByUserId(userId).orElseThrow();
+        long beforeAmount = original.getAmount();
+
+        ChargeBalanceCriteria criteria = ChargeBalanceCriteria.of(userId, charge.value(), "충전 테스트");
 
         // when
         balanceFacade.charge(criteria);
 
-        // then: DB 기준 검증
+        // then
         Balance updated = balanceRepository.findByUserId(userId).orElseThrow();
-        assertThat(Money.wons(updated.getAmount())).isEqualTo(initial.add(charge));
+        assertThat(updated.getAmount()).isEqualTo(beforeAmount + charge.value());
 
         BalanceHistory history = balanceHistoryRepository.findAllByUserId(userId).get(0);
-        assertThat(Money.wons(history.getAmount())).isEqualTo(charge);
+        assertThat(history.getAmount()).isEqualTo(charge.value());
         assertThat(history.isChargeHistory()).isTrue();
-        assertThat(history.getReason()).isEqualTo("테스트 충전");
+        assertThat(history.getReason()).isEqualTo("충전 테스트");
     }
 }

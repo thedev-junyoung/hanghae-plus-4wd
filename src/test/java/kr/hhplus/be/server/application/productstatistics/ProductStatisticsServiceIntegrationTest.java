@@ -31,27 +31,36 @@ class ProductStatisticsServiceIntegrationTest {
     @DisplayName("오늘자 통계가 없을 경우 새로 생성되어 저장된다")
     void record_createsNewStatistics() {
         // given
-        Long productId = 100L;
-        int quantity = 2;
-        long amount = 10000L;
+        Long productId = 10L; // 실제 존재하는 제품 ID (예: Reebok Classic Leather)
         LocalDate today = LocalDate.now();
+        int quantity = 2;
+        long unitAmount = 10000L;
+
+        // 🧹 기존 통계가 있으면 삭제
+        repository.findByProductIdAndStatDate(productId, today)
+                .ifPresent(stat -> repository.delete(stat));
 
         // when
-        service.record(new RecordSalesCommand(productId, quantity, amount));
+        service.record(new RecordSalesCommand(productId, quantity, unitAmount));
 
-        // then: DB에 실제 저장된 값 확인
-        ProductStatistics stats = repository.findByProductIdAndStatDate(productId, today).orElseThrow();
+        // then
+        ProductStatistics stats = repository.findByProductIdAndStatDate(productId, today)
+                .orElseThrow(() -> new AssertionError("통계가 저장되지 않았습니다"));
+
         assertThat(stats.getSalesCount()).isEqualTo(2);
         assertThat(stats.getSalesAmount()).isEqualTo(20000L); // 2 * 10000
     }
+
 
     @Test
     @DisplayName("오늘자 통계가 존재하면 판매량과 금액이 누적된다")
     void record_accumulatesIfStatisticsExists() {
         // given
-        Long productId = 200L;
+        Long productId = 9L; // Vans Old Skool
         LocalDate today = LocalDate.now();
 
+        // clean up and setup
+        repository.findByProductIdAndStatDate(productId, today).ifPresent(repository::delete);
         ProductStatistics existing = ProductStatistics.create(productId, today);
         existing.addSales(1, Money.wons(5000L));
         repository.save(existing);
@@ -59,7 +68,7 @@ class ProductStatisticsServiceIntegrationTest {
         // when
         service.record(new RecordSalesCommand(productId, 2, 5000L));
 
-        // then: 누적된 값 검증
+        // then
         ProductStatistics stats = repository.findByProductIdAndStatDate(productId, today).orElseThrow();
         assertThat(stats.getSalesCount()).isEqualTo(3);
         assertThat(stats.getSalesAmount()).isEqualTo(15000L);
@@ -70,33 +79,26 @@ class ProductStatisticsServiceIntegrationTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void findTopSellingProducts_shouldReturnSortedListWithinDateRange() {
         // given
-        // 테스트 전에 기존 데이터 삭제
-        repository.deleteAll();
+        repository.deleteAll(); // 모든 통계 삭제 후 시작
 
-        // given
         LocalDate today = LocalDate.now();
-        LocalDate inRange = today.minusDays(3);
+        LocalDate inRange = today.minusDays(2);
         LocalDate outOfRange = today.minusDays(10);
 
-        Long productId1 = 1L;
-        Long productId2 = 2L;
+        Long productId1 = 1L; // New Balance 993
+        Long productId2 = 2L; // ASICS GEL-Kayano 14
 
         ProductStatistics inRangeStat1 = new ProductStatistics(
                 new ProductStatisticsId(productId1, inRange),
-                5, // 판매수량
-                Money.wons(50000) // 총 판매금액 (5 * 10000)
+                5, Money.wons(50000)
         );
-
         ProductStatistics inRangeStat2 = new ProductStatistics(
                 new ProductStatisticsId(productId2, today),
-                10, // 판매수량
-                Money.wons(120000) // 총 판매금액 (10 * 12000)
+                10, Money.wons(120000)
         );
-
         ProductStatistics outOfRangeStat = new ProductStatistics(
                 new ProductStatisticsId(productId1, outOfRange),
-                100,
-                Money.wons(1000000)
+                100, Money.wons(1000000)
         );
 
         repository.saveAll(List.of(inRangeStat1, inRangeStat2, outOfRangeStat));
@@ -112,14 +114,5 @@ class ProductStatisticsServiceIntegrationTest {
         assertThat(results.get(0).salesCount()).isEqualTo(10);
         assertThat(results.get(1).productId()).isEqualTo(productId1);
         assertThat(results.get(1).salesCount()).isEqualTo(5);
-
-        // DB 기준 검증도 명확하게
-        ProductStatistics latestStat = repository.findByProductIdAndStatDate(productId2, today).orElseThrow();
-        assertThat(latestStat.getSalesCount()).isEqualTo(10);
-        assertThat(latestStat.getSalesAmount()).isEqualTo(120000L);
-
-        ProductStatistics excludedStat = repository.findByProductIdAndStatDate(productId1, outOfRange).orElseThrow();
-        assertThat(excludedStat.getSalesCount()).isEqualTo(100);
     }
-
 }

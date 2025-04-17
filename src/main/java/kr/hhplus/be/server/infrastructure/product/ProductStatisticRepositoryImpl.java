@@ -52,8 +52,12 @@ public class ProductStatisticRepositoryImpl implements ProductStatisticsReposito
     }
 
     @Override
+    public void delete(ProductStatistics stats) {
+        jpaRepository.delete(stats);
+    }
+
+    @Override
     public void deleteAll() {
         jpaRepository.deleteAll();
     }
-
 }

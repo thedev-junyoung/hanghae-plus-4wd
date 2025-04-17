@@ -25,13 +25,13 @@ public class ProductService implements ProductUseCase {
 
         List<ProductInfo> infos = productPage.getContent().stream()
                 .map(product -> {
-                    int stock = productStockRepository.findByProductId(product.getId())
-                            .map(ProductStock::getStockQuantity)
-                            .orElse(0);
-                    return ProductInfo.from(product, stock);
+                    List<ProductStock> stocks = productStockRepository.findAllByProductId(product.getId());
+                    int totalStock = stocks.stream()
+                            .mapToInt(ProductStock::getStockQuantity)
+                            .sum();
+                    return ProductInfo.from(product, totalStock);
                 })
                 .toList();
-
         return ProductListResult.from(infos);
     }
 
@@ -55,7 +55,7 @@ public class ProductService implements ProductUseCase {
 
         ProductStock stock = productStockRepository.findByProductIdAndSize(command.productId(), command.size())
                 .orElseThrow(ProductException.InsufficientStockException::new);
-
+        product.validateOrderable(stock.getStockQuantity());
         stock.decreaseStock(command.quantity());
         productStockRepository.save(stock);
         return true;

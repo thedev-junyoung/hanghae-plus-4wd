@@ -1,3 +1,7 @@
+SET NAMES utf8mb4;
+
+
+
 -- Products
 INSERT INTO product (id, name, brand, price, release_date, image_url, description, created_at, updated_at)
 VALUES
@@ -6,7 +10,14 @@ VALUES
     (3, 'New Balance 530', 'New Balance', 129000, '2025-04-14', 'http://example.com/nb530.jpg', '캐주얼한 데일리 슈즈', NOW(), NOW()),
     (4, 'Nike Daybreak', 'Nike', 109000, '2025-04-14', 'http://example.com/daybreak.jpg', '빈티지 감성 러닝화', NOW(), NOW()),
     (5, 'Nike Air Force 1', 'Nike', 139000, '2025-04-14', 'http://example.com/airforce1.jpg', '클래식 로우탑', NOW(), NOW()),
-    (6, 'Autry Medalist', 'Autry', 185000, '2025-04-14', 'http://example.com/autry.jpg', '빈티지 미국 감성 스니커즈', NOW(), NOW());
+    (6, 'Autry Medalist', 'Autry', 185000, '2025-04-14', 'http://example.com/autry.jpg', '빈티지 미국 감성 스니커즈', NOW(), NOW()),
+    (7, 'Adidas Samba OG', 'Adidas', 129000, '2025-04-14', 'http://example.com/samba.jpg', '레트로 감성 풋살화', NOW(), NOW()),
+    (8, 'Converse Chuck 70', 'Converse', 85000, '2025-04-14', 'http://example.com/chuck70.jpg', '빈티지 캔버스 로우탑', NOW(), NOW()),
+    (9, 'Vans Old Skool', 'Vans', 69000, '2025-04-14', 'http://example.com/oldskool.jpg', '스케이트 보드화', NOW(), NOW()),
+    (10, 'Reebok Club C 85', 'Reebok', 99000, '2025-04-14', 'http://example.com/clubc85.jpg', '클래식 화이트 스니커즈', NOW(), NOW()),
+    (11, 'Hoka One One Bondi 8', 'Hoka One One', 249000, '2025-04-14', 'http://example.com/bondi8.jpg', '최고의 쿠셔닝 러닝화', NOW(), NOW()),
+    (12, 'On Cloudstratus', 'On Running', 239000, '2025-07-14', 'http://example.com/cloudstratus.jpg', '스위스 기술의 러닝화', NOW(), NOW());
+
 
 -- Product Stocks
 INSERT INTO product_stock (id, product_id, size, stock_quantity, updated_at)
@@ -22,7 +33,10 @@ VALUES
     (9, 5, 265, 80, NOW()),
     (10, 5, 275, 60, NOW()),
     (11, 6, 270, 35, NOW()),
-    (12, 6, 280, 25, NOW());
+    (12, 6, 280, 25, NOW()),
+    (13, 11, 270, 100, NOW()),
+(14, 12, 230, 50, NOW());
+;
 
 -- Balance
 INSERT INTO balance (id, user_id, amount, created_at, updated_at)
@@ -34,7 +48,8 @@ VALUES
 INSERT INTO coupon (id, code, type, discount_rate, total_quantity, remaining_quantity, valid_from, valid_until)
 VALUES
     (1, 'WELCOME10', 'PERCENTAGE', 10, 100, 98, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY)),
-    (2, 'FLAT5000', 'FIXED', 5000, 50, 49, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY));
+    (2, 'FLAT5000', 'FIXED', 5000, 50, 49, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY)),
+    (3, 'TESTONLY1000', 'FIXED', 1000, 10, 10, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY));
 
 
 -- Coupon Issue
@@ -69,3 +84,139 @@ INSERT INTO product_statistics (product_id, stat_date, sales_count, sales_amount
 VALUES
     (1, CURRENT_DATE, 1, 199000),
     (2, CURRENT_DATE, 1, 169000);
+
+
+
+
+
+-- =========================
+-- 대용량 더미 데이터 (100,000건)
+-- =========================
+DELIMITER $$
+
+CREATE PROCEDURE populate_stats()
+BEGIN
+  DECLARE i INT DEFAULT 0;
+  WHILE i < 100000 DO
+BEGIN
+      DECLARE pid INT DEFAULT FLOOR(1 + RAND() * 100);
+      DECLARE sdate DATE DEFAULT DATE_SUB(CURDATE(), INTERVAL FLOOR(RAND() * 30) DAY);
+      DECLARE scount INT DEFAULT FLOOR(1 + RAND() * 50);
+      DECLARE samount BIGINT DEFAULT FLOOR(10000 + RAND() * 50000);
+      INSERT IGNORE INTO product_statistics (product_id, stat_date, sales_count, sales_amount)
+      VALUES (pid, sdate, scount, samount);
+      SET i = i + 1;
+END;
+END WHILE;
+END$$
+
+DELIMITER ;
+
+-- ✅ 세미콜론 필요!
+CALL populate_stats();
+
+
+
+
+
+-- Products (1만 개)
+
+-- 13번 ~ 10000번
+INSERT INTO product (id, name, brand, price, release_date, image_url, description, created_at, updated_at)
+SELECT
+    id,
+    CONVERT(CONCAT('상품-', id) USING utf8mb4),
+    '브랜드',
+    FLOOR(10000 + RAND() * 100000),
+    CURDATE(),
+    CONCAT('http://example.com/image', id, '.jpg'),
+    '테스트용 상품 설명',
+    NOW(),
+    NOW()
+FROM (
+         SELECT @rownum := @rownum + 1 AS id
+         FROM information_schema.tables t1,
+              information_schema.tables t2,
+              (SELECT @rownum := 12) r
+         LIMIT 9988
+     ) tmp;
+
+-- Product Stock (3만 건: 상품당 평균 3개 사이즈)
+INSERT INTO product_stock (product_id, size, stock_quantity, updated_at)
+SELECT
+    product.id,
+    size.size,
+    FLOOR(10 + RAND() * 100),
+    NOW()
+FROM product
+         JOIN (
+    SELECT 250 AS size UNION ALL
+    SELECT 260 UNION ALL
+    SELECT 270 UNION ALL
+    SELECT 280
+) AS size
+WHERE product.id > 1000  -- 기존 데이터 제외
+  AND RAND() < 0.75;       -- 일부만 여러 사이즈
+
+
+
+
+-- Orders (10만 건)
+INSERT INTO orders (id, user_id, total_amount, status, created_at)
+SELECT
+    CONCAT('order-', UUID()),
+    FLOOR(1 + RAND() * 5000),                          -- 다양한 유저
+    FLOOR(50000 + RAND() * 200000),
+    ELT(FLOOR(1 + RAND() * 3), 'CREATED', 'CONFIRMED', 'CANCELLED'),
+    DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 30) DAY)
+FROM (
+         SELECT 1 FROM information_schema.tables t1, information_schema.tables t2 LIMIT 100000
+     ) dummy;
+
+-- Order Items (평균 2~3개씩 → 약 25만 개)
+INSERT INTO order_item (product_id, quantity, size, price, order_id)
+SELECT
+    FLOOR(1 + RAND() * 500),
+    FLOOR(1 + RAND() * 3),
+    ELT(FLOOR(1 + RAND() * 4), 250, 260, 270, 280),
+    FLOOR(10000 + RAND() * 90000),
+    o.id
+FROM orders o
+         JOIN (
+    SELECT 1 AS dummy UNION ALL SELECT 2 UNION ALL SELECT 3
+) AS repeater;
+
+
+
+-- Coupons (500개)
+INSERT INTO coupon (code, type, discount_rate, total_quantity, remaining_quantity, valid_from, valid_until)
+SELECT
+    CONCAT('CODE-', LPAD(id, 5, '0')),
+    'FIXED',
+    1000 + (id % 10) * 500,
+    100,
+    100,
+    NOW(),
+    DATE_ADD(NOW(), INTERVAL 30 DAY)
+FROM (
+         SELECT @cid := @cid + 1 AS id
+         FROM information_schema.tables t1, (SELECT @cid := 2) r
+             LIMIT 500
+     ) tmp;
+
+-- Coupon Issues (50만 건)
+INSERT INTO coupon_issue (user_id, coupon_id, issued_at, is_used)
+SELECT
+    FLOOR(1 + RAND() * 10000), -- 다양한 유저
+    FLOOR(1 + RAND() * 500),
+    NOW(),
+    IF(RAND() < 0.7, false, true)
+FROM (
+         SELECT 1 FROM information_schema.tables t1, information_schema.tables t2 LIMIT 500000
+     ) dummy;
+
+
+SET NAMES utf8mb4;
+SET character_set_client = utf8mb4;
+SET character_set_connection = utf8mb4;
+SET character_set_results = utf8mb4;
