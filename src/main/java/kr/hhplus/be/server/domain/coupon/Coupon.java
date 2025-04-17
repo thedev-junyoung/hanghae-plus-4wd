@@ -55,7 +55,31 @@ public class Coupon {
         return new Coupon(code, type, discountRate, totalQuantity, totalQuantity, validFrom, validUntil);
     }
 
+    public static Coupon createLimitedFixed(String code, int discountAmount, int quantity,
+                                            LocalDateTime validFrom, LocalDateTime validUntil) {
+        return new Coupon(
+                code,
+                CouponType.FIXED,
+                discountAmount,
+                quantity,
+                quantity,
+                validFrom,
+                validUntil
+        );
+    }
 
+    public static Coupon createLimitedPercentage(String code, int discountRate, int quantity,
+                                                 LocalDateTime validFrom, LocalDateTime validUntil) {
+        return new Coupon(
+                code,
+                CouponType.PERCENTAGE,
+                discountRate,
+                quantity,
+                quantity,
+                validFrom,
+                validUntil
+        );
+    }
     public boolean isExpired() {
         return Policy.isExpired(validUntil);
     }

@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.domain.order;
 
 
+import java.util.Collection;
 import java.util.Optional;
 
 public interface OrderRepository{
@@ -15,4 +16,8 @@ public interface OrderRepository{
      * 주문 상세 조회, 상태 확인 등에서 사용된다.
      */
     Optional<Order> findById(String orderId);
+
+    long count();
+
+    Collection<Order> findAll();
 }

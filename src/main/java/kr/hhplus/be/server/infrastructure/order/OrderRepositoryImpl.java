@@ -5,6 +5,8 @@ import kr.hhplus.be.server.domain.order.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -21,5 +23,15 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public Optional<Order> findById(String orderId) {
         return jpaRepository.findById(orderId);
+    }
+
+    @Override
+    public long count() {
+        return jpaRepository.count();
+    }
+
+    @Override
+    public Collection<Order> findAll() {
+        return jpaRepository.findAll();
     }
 }

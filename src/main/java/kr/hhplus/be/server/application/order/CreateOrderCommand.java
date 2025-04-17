@@ -16,7 +16,11 @@ public record CreateOrderCommand(
             Long productId,
             int quantity,
             int size
-    ) {}
+    ) {
+        public static OrderItemCommand of(Long productId, int quantity, int size) {
+            return new OrderItemCommand(productId, quantity, size);
+        }
+    }
     public static CreateOrderCommand of(Long userId, List<OrderItemCommand> items, String couponCode) {
         return new CreateOrderCommand(userId, items, couponCode);
     }

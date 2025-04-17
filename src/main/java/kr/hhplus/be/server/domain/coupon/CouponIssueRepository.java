@@ -7,4 +7,7 @@ public interface CouponIssueRepository {
     CouponIssue save(CouponIssue issue);
     boolean hasIssued(Long userId, Long couponId);
     Optional<CouponIssue> findByUserIdAndCouponId(Long userId, Long couponId);
+
+    long count();
+
 }

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -89,14 +90,15 @@ class ProductServiceIntegrationTest {
         Long productId = 12L; // 미래 출시일로 세팅된 On Cloudstratus
         int size = 270;
 
-        // ⚠️ 재고 미리 있어야 실패 조건 확인 가능
-        productStockRepository.save(ProductStock.of(productId, size, 10));
+        ProductStock stock = productStockRepository.findByProductIdAndSize(productId, size)
+                .orElseGet(() -> productStockRepository.save(ProductStock.of(productId, size, 10)));
 
         // when & then
         assertThatThrownBy(() ->
-                productService.decreaseStock(new DecreaseStockCommand(productId, size, 1)))
+                productService.decreaseStock(new DecreaseStockCommand(stock.getProductId(), stock.getSize(), 1)))
                 .isInstanceOf(ProductException.NotReleasedException.class);
     }
+
 
 /**
  * 테스트 제거 이유:

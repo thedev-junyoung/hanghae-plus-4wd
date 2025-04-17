@@ -27,4 +27,9 @@ public class CouponIssueRepositoryImpl implements CouponIssueRepository {
     public Optional<CouponIssue> findByUserIdAndCouponId(Long userId, Long couponId) {
         return jpaRepository.findByUserIdAndCoupon_Id(userId, couponId);
     }
+
+    @Override
+    public long count() {
+        return jpaRepository.count();
+    }
 }
