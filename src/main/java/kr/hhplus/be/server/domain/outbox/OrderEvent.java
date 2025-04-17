@@ -8,7 +8,6 @@ import kr.hhplus.be.server.domain.orderexport.OrderExportPayload;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -28,8 +27,8 @@ public class OrderEvent {
     @Column(nullable = false)
     private String eventType;      // ex: "PAYMENT_COMPLETED"
 
-    @Lob
-    @Column(nullable = false)
+
+    @Column(name = "payload", columnDefinition = "LONGTEXT", nullable = false)
     private String payload;
 
     @Enumerated(EnumType.STRING)

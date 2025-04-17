@@ -14,13 +14,13 @@ public class ProductRequest {
         }
     }
 
-    public record DetailRequest(Long productId) {
-        public static DetailRequest of(Long productId) {
-            return new DetailRequest(productId);
+    public record DetailRequest(Long productId, int size) {
+        public static DetailRequest of(Long productId, int size) {
+            return new DetailRequest(productId, size);
         }
 
         public GetProductDetailCommand toCommand() {
-            return new GetProductDetailCommand(productId);
+            return new GetProductDetailCommand(productId,size);
         }
     }
 

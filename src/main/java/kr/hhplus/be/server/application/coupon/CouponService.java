@@ -9,16 +9,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CouponService implements CouponUseCase {
 
-    private final CouponReader couponReader;
-    private final CouponIssueWriter couponIssueWriter;
-    private final CouponIssueReader couponIssueReader;
+    private final CouponRepository couponRepository;
+    private final CouponIssueRepository couponIssueRepository;
 
     @Override
     public CouponResult issueLimitedCoupon(IssueLimitedCouponCommand command) {
-        Coupon coupon = couponReader.findByCode(command.couponCode());
+        Coupon coupon = couponRepository.findByCode(command.couponCode());
 
         // 중복 발급 방지
-        if (couponIssueWriter.hasIssued(command.userId(), coupon.getId())) {
+        if (couponIssueRepository.hasIssued(command.userId(), coupon.getId())) {
             throw new CouponException.AlreadyIssuedException(command.userId(), command.couponCode());
         }
 
@@ -26,17 +25,17 @@ public class CouponService implements CouponUseCase {
         CouponIssue issue = CouponIssue.create(command.userId(), coupon);
 
         // 저장
-        couponIssueWriter.save(issue);
+        couponIssueRepository.save(issue);
 
         return CouponResult.from(issue);
     }
 
     @Override
     public ApplyCouponResult applyCoupon(ApplyCouponCommand command) {
-        Coupon coupon = couponReader.findByCode(command.couponCode());
+        Coupon coupon = couponRepository.findByCode(command.couponCode());
 
         // 발급받은 쿠폰 이력 조회
-        CouponIssue issue = couponIssueReader.findByUserIdAndCouponId(command.userId(), coupon.getId())
+        CouponIssue issue = couponIssueRepository.findByUserIdAndCouponId(command.userId(), coupon.getId())
                 .orElseThrow(() -> new CouponException.NotIssuedException(command.userId(), command.couponCode()));
 
         // 쿠폰 유효성 및 사용 여부 체크
