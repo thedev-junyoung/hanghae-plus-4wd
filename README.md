@@ -1,86 +1,65 @@
-# 👟 Sneakers Commerce API
+# **STEP08 - DB & 동시성 테스트 과제**
 
-## 🔍 Overview
+## **프로젝트 개요**
 
-## 핵심 아키텍처 개요
+이 과제는 **DB 성능 최적화** 및 **동시성 문제 해결**을 위한 프로젝트입니다. 주로 **인기 상품 조회**, **상품 조회** API에서 발생할 수 있는 성능 병목을 개선하고, 여러 서비스가 동시작업 시 발생할 수 있는 동시성 문제를 사전에 분석하고 해결합니다.
 
-### ✅ 도메인 역할 분리
+## **주요 테스트**
 
-- **User (Dtype: ADMIN, SELLER, BUYER)**
-  - 단일 테이블에 저장되며, 역할에 따라 기능/권한 분리
-  - *판매자(Seller)**는 **쿠폰 발급 권한** 보유
-- **Coupon 도메인**
-  - 판매자 전용 발급 정책 존재 (정률/정액 할인, 유효기간, 수량 제한)
-  - **선착순 쿠폰 발급 시 Redis 기반 동시성 제어 적용**
+### 1. **동시성 테스트**
+  - **주문 재고 차감 동시성**: 여러 사용자가 동시에 같은 상품을 주문할 때 발생할 수 있는 재고 차감 문제를 검증합니다.
 
----
+    [**OrderConcurrencyTest**](src/test/java/kr/hhplus/be/server/application/order/OrderConcurrencyTest.java)
 
-### ✅ 주문 및 결제 흐름
+  - **잔액 충전 동시성**: 여러 사용자가 동시에 잔액을 충전할 때 발생할 수 있는 동시성 문제를 검증합니다.
 
-- 주문 생성 시: **상품 재고** 및 **쿠폰 유효성** 확인
-- 결제 진행 시: 충전된 잔액 기반, 성공 시
-  - `잔액 차감`
-  - `결제 정보 저장`
-  - `주문 상태 CONFIRMED로 변경`
-  - `외부 전송 이벤트 발행`
+    [**BalanceConcurrencyTest**](/src/test/java/kr/hhplus/be/server/application/balance/BalanceConcurrencyTest.java)
 
-    → 모두 **트랜잭션 내에서 원자적으로 처리**
+  - **쿠폰 발급 동시성**: 여러 사용자가 동시에 같은 쿠폰을 발급받을 때 발생할 수 있는 동시성 문제를 검증합니다.
 
-- 외부 전송은 **트랜잭셔널 아웃박스 패턴**을 적용하여
+    [**CouponConcurrencyTest**](src/test/java/kr/hhplus/be/server/application/coupon/CouponConcurrencyTest.java)
+    
+    
+### [2. **성능 최적화 보고서 **](./report)
+  - **인기 상품 조회** 성능 최적화
 
-  **ORDER_EVENTS 테이블(PENDING)** → 비동기 전송
+    [**popular-products-performance.md**](report/popular-products-performance.md)
+
+  - **상품 목록 조회 - created_at 기준 정렬** 성능 최적화
+
+    [**product-list-created-at-desc-performance.md**](report/product-list-created-at-desc-performance.md)
+
+  - **상품 목록 조회 - 가격 기준 정렬** 성능 최적화
+
+    [**product-list-price-sort-performance.md**](report/product-list-price-sort-performance.md)
 
 
----
+## **⚙️ 실행 방법**
 
-### ✅ 트랜잭셔널 아웃박스 패턴 적용
-
-- 도메인 이벤트(OrderCreated, PaymentCompleted 등)는 `OutboxService`를 통해 저장
-- `EventRelayScheduler`가 주기적으로 미전송 이벤트를 외부 플랫폼으로 전송
-- 외부 전송 실패 시 `RETRY`, `ALERT` 등으로 상태 전이
-- 이를 통해 **DB 트랜잭션 일관성과 외부 연동 실패 복원력 확보**
-
----
-
-## 📌 기능 요약 및 주요 API
-
-| 기능 | 설명 |
-| --- | --- |
-| 잔액 충전/조회 | 사용자 잔액을 충전하거나 조회 |
-| 상품 조회 | 전체 상품 목록 또는 상세 정보 조회 |
-| 주문 생성 | 재고 및 쿠폰 검증 후 주문 생성 |
-| 결제 처리 | 잔액 차감 → 결제 승인 → 이벤트 전송 |
-| 쿠폰 발급/사용 | 판매자 발급, 사용자 발급/적용 |
-| 인기 상품 조회 | 최근 3일간 판매량 기준 Top 5 제공 |
-
----
-
-## 🗂️ 프로젝트 디렉토리 구조
+### 1. **DB 및 초기 데이터 실행**
 
 ```bash
-src
-├── api               # Swagger 명세 전용 인터페이스
-├── domain
-│   ├── order         # 주문 도메인
-│   ├── payment       # 결제 도메인
-│   ├── product       # 상품 도메인
-│   ├── coupon        # 쿠폰 도메인
-│   ├── user          # 사용자 및 잔액 도메인
-├── common            # 공통 응답, 예외 처리, 유틸
-├── config            # 설정 관련 (Redis, Swagger 등)
-├── external          # 외부 플랫폼 연동 모듈
-└── test              # 단위 테스트 및 통합 테스트
+bash
+CopyEdit
+# 전체 MySQL 초기화 + 스키마 및 데이터 자동 적용
+./init/reset-db.sh
 
 ```
 
+- MySQL 컨테이너를 완전히 초기화하고, `init/01-schema.sql`과 `init/02-data.sql`을 실행하여 필요한 스키마 및 데이터를 설정합니다.
+- `./data/mysql` 디렉토리도 초기화되어, 테스트가 완전한 새 상태에서 실행됩니다.
+
+### 2. **테스트 실행 방법**
+
+```bash
+bash
+CopyEdit
+./gradlew test
+
+```
+
+- **Testcontainers**를 기반으로 한 통합 테스트가 실행됩니다.
+- `application.yml`에 DB 정보를 따로 설정할 필요 없이, 자동으로 테스트용 DB 컨테이너가 실행됩니다.
+- 각 테스트는 `@Transactional`을 사용하며 테스트용 DB에서 실행되므로 **안정적이고 격리된 테스트**가 가능합니다.
+
 ---
-
-## 🧾 설계 문서 & 다이어그램
-
-| 분류 | 문서                                                                        |
-| --- |---------------------------------------------------------------------------|
-| 시퀀스 다이어그램 | [`/sequence-diagram`](./docs/sequence-diagram) - 잔액 충전, 주문/결제, 인기 상품 조회 등 |
-| 클래스 다이어그램 | [`/class-diagram`](./docs/class-diagram) - 도메인 모델/책임/관계 정리                |
-| 상태 다이어그램 | [`/state-diagram`](./docs/state-diagram) - 주문, 결제, 쿠폰, 이벤트 전송 상태 흐름 정의    |
-|  ERD | [`/er-diagram`](./docs/er-diagram) - 테이블 구조 및 관계                          |
-| 이벤트 스토밍 | [`/event-storming`](./docs/event-storming) - 이벤트 중심 설계 및 프로세스 모델링         |
