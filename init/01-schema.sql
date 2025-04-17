@@ -120,3 +120,6 @@ CREATE TABLE product_statistics (
                                     PRIMARY KEY (product_id, stat_date)
 );
 
+--
+ALTER TABLE product_stock ADD CONSTRAINT uq_product_size UNIQUE (product_id, size);
+
