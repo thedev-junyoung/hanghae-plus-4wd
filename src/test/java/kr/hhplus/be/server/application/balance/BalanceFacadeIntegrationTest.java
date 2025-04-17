@@ -28,7 +28,7 @@ class BalanceFacadeIntegrationTest {
     private BalanceHistoryRepository balanceHistoryRepository;
 
     @Test
-    @DisplayName("잔액 충전 성공 - 기존 잔액 + 충전 금액")
+    @DisplayName("사용자 잔액이 10,000원일 때 5,000원을 충전하면 총 15,000원이 되며, 충전 히스토리가 기록된다.")
     void charge_success() {
         // given
         Long userId = 1L;
