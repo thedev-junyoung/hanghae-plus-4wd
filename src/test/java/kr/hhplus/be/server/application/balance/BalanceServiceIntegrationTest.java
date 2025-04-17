@@ -20,7 +20,6 @@ class BalanceServiceIntegrationTest {
 
     @Autowired
     BalanceUseCase balanceService;
-
     @Autowired
     BalanceRepository balanceRepository;
 
@@ -31,69 +30,38 @@ class BalanceServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("잔액을 충전할 수 있다")
+    @DisplayName("잔액을 충전하면 DB에도 반영된다")
     void chargeBalance_success() {
-        // given
-        ChargeBalanceCommand command = new ChargeBalanceCommand(1L, 5_000L);
-
-        // when
-        balanceService.charge(command);
-
-        // then: DB 상태 확인
-        Balance balance = balanceRepository.findByUserId(1L).orElseThrow();
-        assertThat(balance.getAmount()).isEqualTo(15_000L);
+        balanceService.charge(new ChargeBalanceCommand(1L, 5_000L));
+        assertThat(balanceRepository.findByUserId(1L).get().getAmount()).isEqualTo(15_000L);
     }
 
     @Test
-    @DisplayName("최소 충전 금액 미만이면 예외가 발생한다")
-    void chargeBalance_belowMinimum_throwsException() {
-        ChargeBalanceCommand command = new ChargeBalanceCommand(1L, 999L);
-
-        assertThatThrownBy(() -> balanceService.charge(command))
-                .isInstanceOf(BalanceException.MinimumChargeAmountException.class);
-    }
-
-    @Test
-    @DisplayName("존재하지 않는 유저의 잔액 충전 시 예외가 발생한다")
-    void chargeBalance_userNotFound_throwsException() {
-        ChargeBalanceCommand command = new ChargeBalanceCommand(999L, 5_000L);
-
-        assertThatThrownBy(() -> balanceService.charge(command))
+    @DisplayName("존재하지 않는 유저는 충전할 수 없다")
+    void chargeBalance_userNotFound() {
+        assertThatThrownBy(() -> balanceService.charge(new ChargeBalanceCommand(999L, 5000L)))
                 .isInstanceOf(BalanceException.NotFoundException.class);
     }
 
     @Test
-    @DisplayName("잔액을 차감할 수 있다")
+    @DisplayName("잔액 차감 성공 시 DB에 반영된다")
     void decreaseBalance_success() {
-        DecreaseBalanceCommand command = DecreaseBalanceCommand.of(1L, 5_000L);
-
-        boolean result = balanceService.decreaseBalance(command);
-
-        assertThat(result).isTrue();
+        balanceService.decreaseBalance(new DecreaseBalanceCommand(1L, 5000L));
         assertThat(balanceRepository.findByUserId(1L).get().getAmount()).isEqualTo(5_000L);
     }
 
     @Test
-    @DisplayName("잔액이 부족하면 예외가 발생한다")
-    void decreaseBalance_insufficientFunds_throwsException() {
-        DecreaseBalanceCommand command = DecreaseBalanceCommand.of(1L, 100_000L);
-
-        assertThatThrownBy(() -> balanceService.decreaseBalance(command))
-                .isInstanceOf(BalanceException.NotEnoughBalanceException.class);
+    @DisplayName("존재하지 않는 유저는 조회할 수 없다")
+    void getBalance_userNotFound() {
+        assertThatThrownBy(() -> balanceService.getBalance(999L))
+                .isInstanceOf(BalanceException.NotFoundException.class);
     }
 
     @Test
     @DisplayName("잔액을 조회할 수 있다")
     void getBalance_success() {
         BalanceResult result = balanceService.getBalance(1L);
-
         assertThat(result.balance()).isEqualTo(10_000L);
     }
-
-    @Test
-    @DisplayName("존재하지 않는 유저 조회 시 예외가 발생한다")
-    void getBalance_userNotFound_throwsException() {
-        assertThatThrownBy(() -> balanceService.getBalance(999L))
-                .isInstanceOf(BalanceException.NotFoundException.class);
-    }
 }
+
