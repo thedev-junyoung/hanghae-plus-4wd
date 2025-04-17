@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @SpringBootTest
 @Transactional
@@ -93,5 +94,15 @@ class CouponServiceIntegrationTest {
         assertThat(after.getRemainingQuantity()).isEqualTo(prevRemaining - 1);
     }
 
+
+    @Test
+    @DisplayName("같은 쿠폰을 두 번 발급받으면 예외가 발생한다")
+    void issueLimitedCoupon_twice_fail() {
+        couponService.issueLimitedCoupon(IssueLimitedCouponCommand.of(userId, "LIMITED50"));
+
+        assertThatThrownBy(() ->
+                couponService.issueLimitedCoupon(IssueLimitedCouponCommand.of(userId, "LIMITED50"))
+        ).isInstanceOf(CouponException.AlreadyIssuedException.class);
+    }
 }
 
