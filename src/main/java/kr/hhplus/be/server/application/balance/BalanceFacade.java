@@ -1,11 +1,13 @@
 package kr.hhplus.be.server.application.balance;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BalanceFacade {
 
     private final BalanceUseCase balanceUseCase;

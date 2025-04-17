@@ -20,7 +20,6 @@ spring:
     properties:
       hibernate.timezone.default_storage: NORMALIZE_UTC
       hibernate.jdbc.time_zone: UTC
-
 ---
 spring.config.activate.on-profile: local, test
 

@@ -52,7 +52,7 @@ public class ProductResponse {
         private final Long id;
         private final String name;
         private final long price;
-        private final int salesCount;
+        private final Long salesCount;
 
         public static PopularProductResponse from(PopularProductResult result) {
             return new PopularProductResponse(

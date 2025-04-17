@@ -7,9 +7,9 @@ public record PopularProductResult(
         Long id,
         String name,
         long price,
-        int salesCount
+        Long salesCount
 ) {
-    public static PopularProductResult from(Product product, int salesCount) {
+    public static PopularProductResult from(Product product, Long salesCount) {
         return new PopularProductResult(
                 product.getId(),
                 product.getName(),

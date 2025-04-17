@@ -21,22 +21,22 @@ public class ProductStatistics {
     @Column(nullable = false)
     private int salesCount;
 
-    @Embedded
-    private Money salesAmount;
+    @Column(nullable = false)
+    private long salesAmount;
 
     public static ProductStatistics create(Long productId, LocalDate date) {
         return new ProductStatistics(new ProductStatisticsId(productId, date), 0, Money.wons(0));
     }
 
-    private ProductStatistics(ProductStatisticsId id, int salesCount, Money salesAmount) {
+    public ProductStatistics(ProductStatisticsId id, int salesCount, Money salesAmount) {
         this.id = id;
         this.salesCount = salesCount;
-        this.salesAmount = salesAmount;
+        this.salesAmount = salesAmount.value();
     }
 
     public void addSales(int quantity, Money unitPrice) {
         this.salesCount += quantity;
-        this.salesAmount = this.salesAmount.add(unitPrice.multiply(quantity));
+        this.salesAmount += unitPrice.multiply(quantity).value();
     }
 
     public Long getProductId() {

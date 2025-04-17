@@ -4,6 +4,7 @@ import kr.hhplus.be.server.domain.product.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class ProductService implements ProductUseCase {
     private final ProductStockRepository productStockRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public ProductListResult getProductList(GetProductListCommand command) {
         PageRequest pageRequest = PageRequest.of(command.page(), command.size(), command.getSort());
 
@@ -23,22 +25,23 @@ public class ProductService implements ProductUseCase {
 
         List<ProductInfo> infos = productPage.getContent().stream()
                 .map(product -> {
-                    int stock = productStockRepository.findByProductId(product.getId())
-                            .map(ProductStock::getStockQuantity)
-                            .orElse(0);
-                    return ProductInfo.from(product, stock);
+                    List<ProductStock> stocks = productStockRepository.findAllByProductId(product.getId());
+                    int totalStock = stocks.stream()
+                            .mapToInt(ProductStock::getStockQuantity)
+                            .sum();
+                    return ProductInfo.from(product, totalStock);
                 })
                 .toList();
-
         return ProductListResult.from(infos);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductDetailResult getProductDetail(GetProductDetailCommand command) {
         Product product = productRepository.findById(command.productId())
                 .orElseThrow(() -> new ProductException.NotFoundException(command.productId()));
 
-        int stock = productStockRepository.findByProductId(product.getId())
+        int stock = productStockRepository.findByProductIdAndSize(product.getId(), command.size())
                 .map(ProductStock::getStockQuantity)
                 .orElse(0);
 
@@ -52,7 +55,7 @@ public class ProductService implements ProductUseCase {
 
         ProductStock stock = productStockRepository.findByProductIdAndSize(command.productId(), command.size())
                 .orElseThrow(ProductException.InsufficientStockException::new);
-
+        product.validateOrderable(stock.getStockQuantity());
         stock.decreaseStock(command.quantity());
         productStockRepository.save(stock);
         return true;
