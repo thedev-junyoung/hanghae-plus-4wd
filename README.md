@@ -33,11 +33,11 @@
 
 각 테스트는 명확한 시나리오를 기반으로 설계되었고, **동시성 제어가 없는 상태에서 실패해야 정상**입니다.
 
-| 테스트명 | 설명 | 링크 |
-| --- | --- | --- |
-| 주문 재고 차감 | 3명이 동시에 동일 상품을 5개씩 주문 (재고 10개) → 최대 2건 성공 | [**OrderConcurrencyTest**](https://www.notion.so/src/test/java/kr/hhplus/be/server/application/order/OrderConcurrencyTest.java) |
-| 잔액 충전 | 10명이 동시에 10,000원씩 충전 요청 → 최종 잔액은 100,000원 | [**BalanceConcurrencyTest**](https://www.notion.so/src/test/java/kr/hhplus/be/server/application/balance/BalanceConcurrencyTest.java) |
-| 쿠폰 발급 | 10명이 동시에 2개 한정 쿠폰을 발급 요청 → 초과 발급 여부 확인 | [**CouponConcurrencyTest**](https://www.notion.so/src/test/java/kr/hhplus/be/server/application/coupon/CouponConcurrencyTest.java) |
+| 테스트명 | 설명 | 링크                                                                                                                |
+| --- | --- |-------------------------------------------------------------------------------------------------------------------|
+| 주문 재고 차감 | 3명이 동시에 동일 상품을 5개씩 주문 (재고 10개) → 최대 2건 성공 | [**OrderConcurrencyTest**](./src/test/java/kr/hhplus/be/server/application/order/OrderConcurrencyTest.java)       |
+| 잔액 충전 | 10명이 동시에 10,000원씩 충전 요청 → 최종 잔액은 100,000원 | [**BalanceConcurrencyTest**](./src/test/java/kr/hhplus/be/server/application/balance/BalanceConcurrencyTest.java) |
+| 쿠폰 발급 | 10명이 동시에 2개 한정 쿠폰을 발급 요청 → 초과 발급 여부 확인 | [**CouponConcurrencyTest**](./src/test/java/kr/hhplus/be/server/application/coupon/CouponConcurrencyTest.java)    |
 
 ## ⚙️ 실행 방법
 
