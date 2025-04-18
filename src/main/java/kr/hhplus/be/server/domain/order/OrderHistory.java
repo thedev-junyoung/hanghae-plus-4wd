@@ -22,7 +22,7 @@ public class OrderHistory {
     @Column(nullable = false)
     private String status;
 
-    @Lob
+    @Column(name = "memo", columnDefinition = "LONGTEXT", nullable = false)
     private String memo;
 
     @Column(name = "changed_at", nullable = false)

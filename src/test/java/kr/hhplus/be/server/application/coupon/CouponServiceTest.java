@@ -22,13 +22,10 @@ import static org.mockito.Mockito.verify;
 class CouponServiceTest {
 
     @Mock
-    private CouponReader couponReader;
+    private CouponRepository couponRepository;
 
     @Mock
-    private CouponIssueWriter couponIssueWriter;
-
-    @Mock
-    private CouponIssueReader couponIssueReader;
+    private CouponIssueRepository couponIssueRepository;
 
     @InjectMocks
     private CouponService couponService;
@@ -44,8 +41,8 @@ class CouponServiceTest {
         Coupon coupon = createValidCoupon();
         IssueLimitedCouponCommand command = new IssueLimitedCouponCommand(userId, couponCode);
 
-        given(couponReader.findByCode(couponCode)).willReturn(coupon);
-        given(couponIssueWriter.hasIssued(userId, coupon.getId())).willReturn(false);
+        given(couponRepository.findByCode(couponCode)).willReturn(coupon);
+        given(couponIssueRepository.hasIssued(userId, coupon.getId())).willReturn(false);
 
         // when
         CouponResult result = couponService.issueLimitedCoupon(command);
@@ -56,7 +53,7 @@ class CouponServiceTest {
 
         // captor 생성
         ArgumentCaptor<CouponIssue> captor = ArgumentCaptor.forClass(CouponIssue.class);
-        verify(couponIssueWriter).save(captor.capture()); // 실제로 넘긴 객체 캡처
+        verify(couponIssueRepository).save(captor.capture()); // 실제로 넘긴 객체 캡처
 
         CouponIssue saved = captor.getValue();
         assertThat(saved.getUserId()).isEqualTo(userId);
@@ -68,8 +65,8 @@ class CouponServiceTest {
     void issueCoupon_fail_ifAlreadyIssued() {
         // given
         Coupon coupon = createValidCoupon();
-        given(couponReader.findByCode(couponCode)).willReturn(coupon);
-        given(couponIssueWriter.hasIssued(userId, coupon.getId())).willReturn(true);
+        given(couponRepository.findByCode(couponCode)).willReturn(coupon);
+        given(couponIssueRepository.hasIssued(userId, coupon.getId())).willReturn(true);
 
         // when & then
         assertThrows(CouponException.AlreadyIssuedException.class, () ->
@@ -89,7 +86,7 @@ class CouponServiceTest {
                 LocalDateTime.now().minusDays(1)
         );
 
-        given(couponReader.findByCode(couponCode)).willReturn(coupon);
+        given(couponRepository.findByCode(couponCode)).willReturn(coupon);
 
         // when & then
         assertThrows(CouponException.ExpiredException.class, () ->
@@ -112,7 +109,7 @@ class CouponServiceTest {
                 LocalDateTime.now().plusDays(1)
         );
 
-        given(couponReader.findByCode(couponCode)).willReturn(coupon);
+        given(couponRepository.findByCode(couponCode)).willReturn(coupon);
 
         // when & then
         assertThrows(CouponException.AlreadyExhaustedException.class, () ->
@@ -130,8 +127,8 @@ class CouponServiceTest {
         Money expectedDiscount = coupon.calculateDiscount(orderAmount);
         CouponIssue issue = CouponIssue.create(userId, coupon);
 
-        given(couponReader.findByCode(couponCode)).willReturn(coupon);
-        given(couponIssueReader.findByUserIdAndCouponId(userId, coupon.getId()))
+        given(couponRepository.findByCode(couponCode)).willReturn(coupon);
+        given(couponIssueRepository.findByUserIdAndCouponId(userId, coupon.getId()))
                 .willReturn(java.util.Optional.of(issue));
 
         // when
@@ -151,8 +148,8 @@ class CouponServiceTest {
         // given
         Coupon coupon = createValidCoupon();
 
-        given(couponReader.findByCode(couponCode)).willReturn(coupon);
-        given(couponIssueReader.findByUserIdAndCouponId(userId, coupon.getId()))
+        given(couponRepository.findByCode(couponCode)).willReturn(coupon);
+        given(couponIssueRepository.findByUserIdAndCouponId(userId, coupon.getId()))
                 .willReturn(java.util.Optional.empty());  // 변경 포인트!
 
         // when & then

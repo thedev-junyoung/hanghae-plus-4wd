@@ -1,86 +1,63 @@
-# 👟 Sneakers Commerce API
+# **STEP08 - DB & 동시성 테스트 과제**
 
-## 🔍 Overview
+## 📌 프로젝트 개요
 
-## 핵심 아키텍처 개요
+이 과제는 **DB 조회 성능 최적화**와 **동시성 이슈 탐지 및 검증 테스트**를 목표로 합니다.
 
-### ✅ 도메인 역할 분리
-
-- **User (Dtype: ADMIN, SELLER, BUYER)**
-  - 단일 테이블에 저장되며, 역할에 따라 기능/권한 분리
-  - *판매자(Seller)**는 **쿠폰 발급 권한** 보유
-- **Coupon 도메인**
-  - 판매자 전용 발급 정책 존재 (정률/정액 할인, 유효기간, 수량 제한)
-  - **선착순 쿠폰 발급 시 Redis 기반 동시성 제어 적용**
+병목이 발생할 수 있는 조회 쿼리를 실험적으로 재현하고, **인덱스 적용 전후의 실행 계획을 비교 분석**하여 사전 성능 개선 가능성을 검증했습니다.
 
 ---
 
-### ✅ 주문 및 결제 흐름
+## ✅ 주요 구성
 
-- 주문 생성 시: **상품 재고** 및 **쿠폰 유효성** 확인
-- 결제 진행 시: 충전된 잔액 기반, 성공 시
-  - `잔액 차감`
-  - `결제 정보 저장`
-  - `주문 상태 CONFIRMED로 변경`
-  - `외부 전송 이벤트 발행`
+### 1. 📊 **조회 성능 병목 분석 및 인덱스 최적화 보고서**
 
-    → 모두 **트랜잭션 내에서 원자적으로 처리**
+다음 3가지 API를 대상으로 **실행 계획(Explain Analyze)** 기반의 병목 분석과 인덱스 전략을 수립했습니다:
 
-- 외부 전송은 **트랜잭셔널 아웃박스 패턴**을 적용하여
-
-  **ORDER_EVENTS 테이블(PENDING)** → 비동기 전송
-
-
----
-
-### ✅ 트랜잭셔널 아웃박스 패턴 적용
-
-- 도메인 이벤트(OrderCreated, PaymentCompleted 등)는 `OutboxService`를 통해 저장
-- `EventRelayScheduler`가 주기적으로 미전송 이벤트를 외부 플랫폼으로 전송
-- 외부 전송 실패 시 `RETRY`, `ALERT` 등으로 상태 전이
-- 이를 통해 **DB 트랜잭션 일관성과 외부 연동 실패 복원력 확보**
-
----
-
-## 📌 기능 요약 및 주요 API
-
-| 기능 | 설명 |
+| 보고서명 | 설명 |
 | --- | --- |
-| 잔액 충전/조회 | 사용자 잔액을 충전하거나 조회 |
-| 상품 조회 | 전체 상품 목록 또는 상세 정보 조회 |
-| 주문 생성 | 재고 및 쿠폰 검증 후 주문 생성 |
-| 결제 처리 | 잔액 차감 → 결제 승인 → 이벤트 전송 |
-| 쿠폰 발급/사용 | 판매자 발급, 사용자 발급/적용 |
-| 인기 상품 조회 | 최근 3일간 판매량 기준 Top 5 제공 |
+| [**popular-products-performance.md**](./report/popular-products-performance.md) | `stat_date + sales_count` 복합 정렬 조건에 대한 병목 분석 |
+| [**product-list-created-at-desc-performance.md**](./report/product-list-created-at-desc-performance.md) | 최신순 정렬 + 페이징 (OFFSET, Cursor 기반) 성능 비교 |
+| [**product-list-price-sort-performance.md**](./report/product-list-price-sort-performance.md) | 가격 정렬 기준에서 filesort 제거 및 FORCE INDEX 전략 검토 |
 
----
+각 보고서에는 다음이 포함되어 있습니다:
 
-## 🗂️ 프로젝트 디렉토리 구조
+- 실행 계획 (인덱스 전/후 비교)
+- Covering Index, Cursor 방식 적용 결과
+- Top-N 정렬 병목 제거 전략
+- 실시간 API 기준으로 실무 적용 가능한 개선안
+
+### 2. ⚠️ **동시성 테스트 (Concurrency Tests)**
+
+동시성 테스트는 단위 로직이 아닌, **애플리케이션 레이어의 협력 시나리오를 통해 이슈를 재현**하는 방식으로 구성하였습니다.
+
+각 테스트는 명확한 시나리오를 기반으로 설계되었고, **동시성 제어가 없는 상태에서 실패해야 정상**입니다.
+
+| 테스트명 | 설명 | 링크                                                                                                                |
+| --- | --- |-------------------------------------------------------------------------------------------------------------------|
+| 주문 재고 차감 | 3명이 동시에 동일 상품을 5개씩 주문 (재고 10개) → 최대 2건 성공 | [**OrderConcurrencyTest**](./src/test/java/kr/hhplus/be/server/application/order/OrderConcurrencyTest.java)       |
+| 잔액 충전 | 10명이 동시에 10,000원씩 충전 요청 → 최종 잔액은 100,000원 | [**BalanceConcurrencyTest**](./src/test/java/kr/hhplus/be/server/application/balance/BalanceConcurrencyTest.java) |
+| 쿠폰 발급 | 10명이 동시에 2개 한정 쿠폰을 발급 요청 → 초과 발급 여부 확인 | [**CouponConcurrencyTest**](./src/test/java/kr/hhplus/be/server/application/coupon/CouponConcurrencyTest.java)    |
+
+## ⚙️ 실행 방법
+
+### 1. DB 및 초기 데이터 구성
 
 ```bash
-src
-├── api               # Swagger 명세 전용 인터페이스
-├── domain
-│   ├── order         # 주문 도메인
-│   ├── payment       # 결제 도메인
-│   ├── product       # 상품 도메인
-│   ├── coupon        # 쿠폰 도메인
-│   ├── user          # 사용자 및 잔액 도메인
-├── common            # 공통 응답, 예외 처리, 유틸
-├── config            # 설정 관련 (Redis, Swagger 등)
-├── external          # 외부 플랫폼 연동 모듈
-└── test              # 단위 테스트 및 통합 테스트
-
+./init/reset-db.sh
 ```
+
+- MySQL 컨테이너를 완전히 초기화하고, `init/01-schema.sql`, `02-data.sql`을 자동 적용합니다.
+- `./data/mysql` 디렉토리도 함께 초기화되어 **일관된 테스트 조건이 보장**됩니다.
 
 ---
 
-## 🧾 설계 문서 & 다이어그램
+### 2. 테스트 실행
 
-| 분류 | 문서                                                                        |
-| --- |---------------------------------------------------------------------------|
-| 시퀀스 다이어그램 | [`/sequence-diagram`](./docs/sequence-diagram) - 잔액 충전, 주문/결제, 인기 상품 조회 등 |
-| 클래스 다이어그램 | [`/class-diagram`](./docs/class-diagram) - 도메인 모델/책임/관계 정리                |
-| 상태 다이어그램 | [`/state-diagram`](./docs/state-diagram) - 주문, 결제, 쿠폰, 이벤트 전송 상태 흐름 정의    |
-|  ERD | [`/er-diagram`](./docs/er-diagram) - 테이블 구조 및 관계                          |
-| 이벤트 스토밍 | [`/event-storming`](./docs/event-storming) - 이벤트 중심 설계 및 프로세스 모델링         |
+```bash
+./gradlew test
+```
+
+- **Testcontainers 기반 통합 테스트**가 실행됩니다.
+- DB 설정을 별도로 할 필요 없이 `application.yml` 설정 없이 자동 구성됩니다.
+- 모든 테스트는 `@Transactional`로 격리되어 **신뢰 가능한 시뮬레이션 환경**에서 실행됩니다.

@@ -25,8 +25,8 @@ public class OrderItem {
     @Column(nullable = false)
     private int size;
 
-    @Embedded
-    private Money price;
+    @Column(nullable = false)
+    private long price;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
@@ -38,7 +38,7 @@ public class OrderItem {
         item.productId = productId;
         item.quantity = quantity;
         item.size = size;
-        item.price = price;
+        item.price = price.value();
         return item;
     }
 
@@ -47,6 +47,6 @@ public class OrderItem {
     }
 
     public Money calculateTotal() {
-        return price.multiply(quantity);
+        return Money.from(price).multiply(quantity);
     }
 }

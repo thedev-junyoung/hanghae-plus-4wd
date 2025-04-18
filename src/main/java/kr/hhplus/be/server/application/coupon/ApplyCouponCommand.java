@@ -6,4 +6,8 @@ public record ApplyCouponCommand(
         Long userId,
         String couponCode,
         Money orderAmount
-) {}
+) {
+    public static ApplyCouponCommand of(Long userId, String couponCode, Money orderAmount) {
+        return new ApplyCouponCommand(userId, couponCode, orderAmount);
+    }
+}

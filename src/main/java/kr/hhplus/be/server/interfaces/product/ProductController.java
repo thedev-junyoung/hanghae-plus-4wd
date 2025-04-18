@@ -36,9 +36,10 @@ public class ProductController implements ProductAPI {
 
     @Override
     public ResponseEntity<CustomApiResponse<ProductResponse.ProductDetailResponse>> getProduct(
-            @PathVariable Long productId
+            @PathVariable Long productId,
+            @RequestParam(defaultValue = "0") int size
     ) {
-        ProductRequest.DetailRequest request = ProductRequest.DetailRequest.of(productId);
+        ProductRequest.DetailRequest request = ProductRequest.DetailRequest.of(productId, size);
         ProductDetailResult result = productUseCase.getProductDetail(request.toCommand());
         return ResponseEntity.ok(CustomApiResponse.success(ProductResponse.ProductDetailResponse.from(result)));
     }

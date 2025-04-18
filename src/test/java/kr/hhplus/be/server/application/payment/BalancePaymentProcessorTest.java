@@ -34,7 +34,7 @@ class BalancePaymentProcessorTest {
         // given
         RequestPaymentCommand command = new RequestPaymentCommand("ORDER-001", 100L, 1000L,"BALANCE");
 
-        Order order = Order.create("ORDER-001", 100L,
+        Order order = Order.create( 100L,
                 List.of(OrderItem.of(1L, 2, 270, Money.wons(100000))),
                 Money.wons(200000));
 

@@ -65,4 +65,8 @@ public class Money {
     public Money multiplyPercent(int percent) {
         return new Money((this.value * percent) / 100);
     }
+    public boolean isNegative() {
+        return this.value < 0;
+    }
+
 }

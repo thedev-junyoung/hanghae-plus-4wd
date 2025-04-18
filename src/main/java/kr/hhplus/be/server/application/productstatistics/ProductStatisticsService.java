@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +27,11 @@ public class ProductStatisticsService implements ProductStatisticsUseCase {
 
     @Override
     public Collection<ProductSalesInfo> getTopSellingProducts(PopularProductCriteria criteria) {
-        return List.of();
+        LocalDate today = LocalDate.now();
+        LocalDate from = today.minusDays(criteria.days());
+        int limit = criteria.limit();
+
+        return repository.findTopSellingProducts(from, today, limit);
     }
 
 }

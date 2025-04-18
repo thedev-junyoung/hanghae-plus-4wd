@@ -70,7 +70,7 @@ class OrderFacadeServiceTest {
         when(productService.getProductDetail(any(GetProductDetailCommand.class))).thenReturn(productResult);
         when(couponUseCase.applyCoupon(any(ApplyCouponCommand.class))).thenReturn(couponResult);
         when(orderService.createOrder(eq(userId), anyList(), eq(discountedTotal)))
-                .thenReturn(Order.create("order-id", userId,
+                .thenReturn(Order.create(userId,
                         List.of(OrderItem.of(productId, quantity, size, Money.wons(4000))), // 할인 적용된 가격
                         discountedTotal));
 
